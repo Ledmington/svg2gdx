@@ -45,7 +45,8 @@ public final class SVGPalette implements SVGElement {
         final StringBuilder sb = new StringBuilder();
         for (final Map.Entry<SVGColor, Integer> e : colors.entrySet()) {
             sb.append(String.format(
-                    "final Color %s = %s\n", "c" + e.getValue(), e.getKey().toGDXShapeRenderer()));
+                            "final Color c%s = %s", e.getValue(), e.getKey().toGDXShapeRenderer()))
+                    .append('\n');
         }
         return sb.toString();
     }

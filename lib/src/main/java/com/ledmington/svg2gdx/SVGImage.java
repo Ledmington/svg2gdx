@@ -63,7 +63,7 @@ public final class SVGImage implements SVGElement {
         final Element root = doc.getDocumentElement();
         if (!root.getNodeName().equals("svg")) {
             throw new IllegalArgumentException(
-                    String.format("Invalid root element: expected 'svg' but was '%s'\n", root.getNodeName()));
+                    String.format("Invalid root element: expected 'svg' but was '%s'", root.getNodeName()));
         }
 
         width = Double.parseDouble(root.getAttributes().getNamedItem("width").getNodeValue());
@@ -86,7 +86,7 @@ public final class SVGImage implements SVGElement {
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            String.format("Unknown element with name '%s'\n", node.getNodeName()));
+                            String.format("Unknown element with name '%s'", node.getNodeName()));
             }
         }
     }
@@ -164,22 +164,23 @@ public final class SVGImage implements SVGElement {
     @Override
     public String toGDXShapeRenderer() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("private void draw(final float x, final float y) {\n");
-        sb.append(String.format("final double width = %s;\n", width));
-        sb.append(String.format("final double height = %s;\n", height));
-        sb.append(palette.toGDXShapeRenderer());
-        sb.append("final ShapeRenderer sr = @Place here your ShapeRenderer@;\n");
-        sb.append("float currentX=0.0f;\n");
-        sb.append("float currentY=0.0f;\n");
-        sb.append("float initialX=0.0f;\n");
-        sb.append("float initialY=0.0f;\n");
-        sb.append("sr.setAutoShapeType(true);\n");
-        sb.append("sr.begin();\n");
+        sb.append("private void draw(final float x, final float y) {\n")
+                .append(String.format("final double width = %s;", width))
+                .append('\n')
+                .append(String.format("final double height = %s;", height))
+                .append('\n')
+                .append(palette.toGDXShapeRenderer())
+                .append("final ShapeRenderer sr = @Place here your ShapeRenderer@;\n")
+                .append("float currentX=0.0f;\n")
+                .append("float currentY=0.0f;\n")
+                .append("float initialX=0.0f;\n")
+                .append("float initialY=0.0f;\n")
+                .append("sr.setAutoShapeType(true);\n")
+                .append("sr.begin();\n");
         for (final SVGElement elem : elements) {
             sb.append(elem.toGDXShapeRenderer());
         }
-        sb.append("sr.end();\n");
-        sb.append("}\n");
+        sb.append("sr.end();\n}\n");
         return sb.toString();
     }
 }

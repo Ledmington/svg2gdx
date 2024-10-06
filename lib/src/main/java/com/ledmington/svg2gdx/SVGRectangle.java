@@ -50,11 +50,8 @@ public final class SVGRectangle implements SVGElement {
 
     @Override
     public String toGDXShapeRenderer() {
-        return // "sr.begin(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"+
-        "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
-                + String.format("sr.setColor(%s);\n", colorName)
-                + String.format("sr.rect(%sf,%sf,%sf,%sf);\n", x, y, width, height)
-        // + "sr.end();\n"
-        ;
+        return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
+                + String.format("sr.setColor(%s);", colorName) + '\n'
+                + String.format("sr.rect(%sf,%sf,%sf,%sf);", x, y, width, height) + '\n';
     }
 }
