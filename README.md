@@ -2,9 +2,15 @@
 ## A converter from SVG to libGDX `ShapeRenderer` code.
 
 ## How to use
-````bash
+To convert statically:
+```bash
 java -jar svg2gdx.jar myimage.svg
-````
+```
+
+To preview the result:
+```bash
+java -jar svg2gdx.jar --test myimage.svg
+```
 
 ## How to build
 You need gradle and java >=21 to compile and run the project.
