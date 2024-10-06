@@ -19,12 +19,41 @@ package com.ledmington.svg2gdx;
 
 public class Main {
     public static void main(final String[] args) {
-        if (args.length < 1) {
-            System.out.println("Expected the name of the SVG image to convert.");
+        String filename = null;
+
+        for (final String arg : args) {
+            switch (arg) {
+                case "-h", "--help" -> {
+                    System.out.println(String.join(
+                            "\n",
+                            "",
+                            " svg2gdx - A converter from SVG to libGDX ShapeRenderer code.",
+                            "",
+                            "Usage: java -jar svg2gdx.jar [flags] FILE",
+                            "",
+                            "Flags:",
+                            " -h, --help  Shows this help message and exits.",
+                            "",
+                            " FILE        The name of the .svg file to convert.",
+                            ""));
+                    System.exit(0);
+                }
+                default -> {
+                    if (filename != null) {
+                        System.err.println("Cannot set the filename twice.");
+                        System.exit(-1);
+                    }
+                    filename = arg;
+                }
+            }
+        }
+
+        if (filename == null) {
+            System.err.println("You have not set the filename to convert.");
             System.exit(-1);
         }
 
-        final SVGImage parsed = new SVGImage(args[0]);
+        final SVGImage parsed = new SVGImage(filename);
         System.out.println(parsed.toGDXShapeRenderer());
     }
 }
