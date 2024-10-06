@@ -17,6 +17,10 @@
  */
 package com.ledmington.svg2gdx;
 
+import java.util.function.Consumer;
+
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 public class Main {
     public static void main(final String[] args) {
         String filename = null;
@@ -59,12 +63,29 @@ public class Main {
         final SVGImage parsed = new SVGImage(filename);
 
         if (showcase) {
-            Showcase.run(sr -> {
-                final long start = System.nanoTime();
-                parsed.draw(sr);
-                final long end = System.nanoTime();
-                System.out.printf(
-                        "Drawing the image took %,d ns (%.3f ms)\n", end - start, (double) (end - start) / 1_000_000.0);
+            Showcase.run(new Consumer<>() {
+
+                private static final int MAX_ITERATIONS = 100;
+                private int it = 0;
+                private long totalTime = 0L;
+
+                @Override
+                public void accept(final ShapeRenderer sr) {
+                    it++;
+                    final long start = System.nanoTime();
+                    parsed.draw(sr);
+                    final long end = System.nanoTime();
+                    totalTime += (end - start);
+                    if (it >= MAX_ITERATIONS) {
+                        final double averageNanos = (double) totalTime / (double) MAX_ITERATIONS;
+                        System.out.printf(
+                                "Drawing the image %,d times took %,d ns (%.3f ms) on average. At 60 FPS you could draw this image %,d times per frame.\n",
+                                MAX_ITERATIONS, (long) averageNanos, averageNanos / 1_000_000.0, (long)
+                                        ((1.0 / 60.0) / (averageNanos / 1_000_000_000.0)));
+                        it = 0;
+                        totalTime = 0L;
+                    }
+                }
             });
         } else {
             System.out.println(parsed.toGDXShapeRenderer());

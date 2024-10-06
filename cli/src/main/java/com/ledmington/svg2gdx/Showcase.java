@@ -29,7 +29,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public final class Showcase extends Game {
 
     private final Consumer<ShapeRenderer> drawImage;
-    private OrthographicCamera camera;
     private ShapeRenderer shapeRenderer;
 
     private Showcase(final Consumer<ShapeRenderer> drawImage) {
@@ -56,10 +55,10 @@ public final class Showcase extends Game {
 
     @Override
     public void create() {
-        camera = new OrthographicCamera();
+        final OrthographicCamera camera = new OrthographicCamera();
         camera.setToOrtho(false, 1280, 720);
         shapeRenderer = new ShapeRenderer();
-        this.setScreen(new ShowcaseScreen(this.camera, this.shapeRenderer, this.drawImage));
+        this.setScreen(new ShowcaseScreen(camera, this.shapeRenderer, this.drawImage));
     }
 
     @Override
