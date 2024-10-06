@@ -29,6 +29,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import com.ledmington.svg2gdx.path.SVGPath;
 
 import org.w3c.dom.Document;
@@ -159,6 +161,19 @@ public final class SVGImage implements SVGElement {
         final String colorName = palette.getName(color);
 
         return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
+    }
+
+    public void draw(final ShapeRenderer sr) {
+        sr.setAutoShapeType(true);
+        sr.begin();
+        for (final SVGElement elem : elements) {
+            switch (elem) {
+                case SVGRectangle rect -> rect.draw(sr, palette);
+                case SVGPath path -> path.draw(sr, palette);
+                default -> throw new Error(elem.toString());
+            }
+        }
+        sr.end();
     }
 
     @Override

@@ -20,6 +20,7 @@ package com.ledmington.svg2gdx;
 public class Main {
     public static void main(final String[] args) {
         String filename = null;
+        boolean showcase = false;
 
         for (final String arg : args) {
             switch (arg) {
@@ -33,11 +34,13 @@ public class Main {
                             "",
                             "Flags:",
                             " -h, --help  Shows this help message and exits.",
+                            " --test      Launches a sample libGDX app to see the converted image.",
                             "",
                             " FILE        The name of the .svg file to convert.",
                             ""));
                     System.exit(0);
                 }
+                case "--test" -> showcase = true;
                 default -> {
                     if (filename != null) {
                         System.err.println("Cannot set the filename twice.");
@@ -54,6 +57,17 @@ public class Main {
         }
 
         final SVGImage parsed = new SVGImage(filename);
-        System.out.println(parsed.toGDXShapeRenderer());
+
+        if (showcase) {
+            Showcase.run(sr -> {
+                final long start = System.nanoTime();
+                parsed.draw(sr);
+                final long end = System.nanoTime();
+                System.out.printf(
+                        "Drawing the image took %,d ns (%.3f ms)\n", end - start, (double) (end - start) / 1_000_000.0);
+            });
+        } else {
+            System.out.println(parsed.toGDXShapeRenderer());
+        }
     }
 }

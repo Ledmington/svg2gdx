@@ -19,6 +19,9 @@ package com.ledmington.svg2gdx;
 
 import java.util.Objects;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 public final class SVGRectangle implements SVGElement {
 
     private final double x;
@@ -46,6 +49,12 @@ public final class SVGRectangle implements SVGElement {
             throw new IllegalArgumentException(
                     String.format("Invalid width and height arguments: %f %f", width, height));
         }
+    }
+
+    public void draw(final ShapeRenderer sr, final SVGPalette palette) {
+        sr.set(filled ? ShapeRenderer.ShapeType.Filled : ShapeRenderer.ShapeType.Line);
+        sr.setColor(Color.CYAN);
+        sr.rect((float) x, (float) y, (float) width, (float) height);
     }
 
     @Override

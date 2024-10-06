@@ -21,10 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
 import com.ledmington.svg2gdx.SVGElement;
+import com.ledmington.svg2gdx.SVGPalette;
 
 public final class SVGPath implements SVGElement {
 
+    private static final int DEFAULT_CURVE_SEGMENTS = 50;
     private final List<SVGPathElement> elements;
     private final String colorName;
 
@@ -62,6 +67,111 @@ public final class SVGPath implements SVGElement {
                             throw new IllegalArgumentException("Unexpected value: " + pathDatum);
                         }
                     });
+        }
+    }
+
+    public void draw(final ShapeRenderer sr, final SVGPalette palette) {
+        sr.setColor(Color.ORANGE);
+
+        SVGPathPoint current = null;
+        SVGPathPoint initial = null;
+        int i = 0;
+        while (i < elements.size()) {
+            final SVGPathElement elem = elements.get(i);
+            switch (elem) {
+                case SVGPathMovetoAbsolute ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i++);
+                    if (initial == null) {
+                        initial = current;
+                    }
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                        sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
+                        current = next;
+                    }
+                }
+                case SVGPathMovetoRelative ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i++);
+                    if (initial == null) {
+                        initial = current;
+                    }
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                        sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
+                                (current.y() + next.y()));
+                        current = next;
+                    }
+                }
+                case SVGPathLinetoAbsolute ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i++);
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                        sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
+                        current = next;
+                    }
+                }
+                case SVGPathLinetoRelative ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i++);
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                        sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
+                                (current.y() + next.y()));
+                        current = next;
+                    }
+                }
+                case SVGPathBezierAbsolute ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i);
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
+                        final SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
+                        final SVGPathPoint end = (SVGPathPoint) elements.get(i++);
+                        sr.curve(
+                                (float) current.x(),
+                                (float) current.y(),
+                                (float) c1.x(),
+                                (float) c1.y(),
+                                (float) c2.x(),
+                                (float) c2.y(),
+                                (float) end.x(),
+                                (float) end.y(),
+                                DEFAULT_CURVE_SEGMENTS);
+                        current = end;
+                    }
+                }
+                case SVGPathBezierRelative ignored -> {
+                    i++;
+                    current = (SVGPathPoint) elements.get(i);
+                    while (elements.get(i) instanceof SVGPathPoint) {
+                        final SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
+                        final SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
+                        final SVGPathPoint end = (SVGPathPoint) elements.get(i++);
+                        sr.curve(
+                                (float) current.x(),
+                                (float) current.y(),
+                                (float) (current.x() + c1.x()),
+                                (float) (current.y() + c1.y()),
+                                (float) (current.x() + c2.x()),
+                                (float) (current.y() + c2.y()),
+                                (float) (current.x() + end.x()),
+                                (float) (current.y() + end.y()),
+                                DEFAULT_CURVE_SEGMENTS);
+                        current = end;
+                    }
+                }
+                case SVGPathClosepath ignored -> {
+                    sr.line((float) current.x(), (float) current.y(), (float) initial.x(), (float) initial.y());
+                    initial = null;
+                    current = new SVGPathPoint(0.0, 0.0);
+                    i++;
+                }
+                default -> throw new IllegalArgumentException(
+                        String.format("Unknown SVG path element type '%s'", elem));
+            }
         }
     }
 
