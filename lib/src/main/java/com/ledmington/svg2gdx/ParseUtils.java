@@ -17,20 +17,20 @@
  */
 package com.ledmington.svg2gdx;
 
+import java.util.Objects;
+
 public final class ParseUtils {
     private ParseUtils() {}
 
     /** Parses the given {@link String} as an hexadecimal 2-digit byte value. */
     public static byte parseByteHex(final String s) {
-        if (s == null) {
-            throw new NullPointerException();
-        }
+        Objects.requireNonNull(s);
         if (s.length() != 2) {
             throw new IllegalArgumentException(
                     String.format("Invalid String: expected length 2 but was %,d", s.length()));
         }
 
-        return (byte) (((parseByteHex(s.charAt(0)) << 4) & 0x000000ff) | (parseByteHex(s.charAt(1)) & 0x000000ff));
+        return or(shl(parseByteHex(s.charAt(0)), 4), parseByteHex(s.charAt(1)));
     }
 
     private static byte parseByteHex(final char ch) {
@@ -40,5 +40,17 @@ public final class ParseUtils {
             case 'A', 'B', 'C', 'D', 'E', 'F' -> (byte) ((ch - 'A' + 10) & 0x000000ff);
             default -> throw new IllegalArgumentException(String.format("Unknown hexadecimal character '%c'", ch));
         };
+    }
+
+    public static byte asByte(final int x) {
+        return (byte) (x & 0x000000ff);
+    }
+
+    public static byte or(final byte a, final byte b) {
+        return asByte(a | b);
+    }
+
+    public static byte shl(final byte x, final int n) {
+        return asByte(x << n);
     }
 }

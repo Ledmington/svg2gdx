@@ -105,25 +105,8 @@ public final class SVGImage implements SVGElement {
         final Map<String, String> styleValues =
                 Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
 
-        SVGColor color = new SVGColor();
+        final SVGColor color = parseColor(styleValues);
         final boolean filled = styleValues.containsKey("fill");
-        if (filled) {
-            final String hexColor = styleValues.get("fill").substring(1); // removing the starting '#'
-            final byte r = ParseUtils.parseByteHex(hexColor.substring(0, 2));
-            final byte g = ParseUtils.parseByteHex(hexColor.substring(2, 4));
-            final byte b = ParseUtils.parseByteHex(hexColor.substring(4, 6));
-            byte a = (byte) 0xff;
-            if (styleValues.containsKey("fill-opacity")) {
-                final double opacity = Double.parseDouble(styleValues.get("fill-opacity"));
-                if (opacity < 0.0 || opacity > 1.0) {
-                    throw new IllegalArgumentException(
-                            String.format("Invalid opacity value: expected between 0.0 and 1.0 but was %f", opacity));
-                }
-                a = (byte) (((int) (opacity * 255.0)) & 0x000000ff);
-            }
-            color = new SVGColor(r, g, b, a);
-            palette.add(color);
-        }
 
         return new SVGRectangle(x, y, width, height, filled, palette.getName(color));
     }
@@ -139,6 +122,13 @@ public final class SVGImage implements SVGElement {
         final Map<String, String> styleValues =
                 Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
 
+        final SVGColor color = parseColor(styleValues);
+        final String colorName = palette.getName(color);
+
+        return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
+    }
+
+    private SVGColor parseColor(final Map<String, String> styleValues) {
         SVGColor color = new SVGColor();
         final boolean filled = styleValues.containsKey("fill");
         if (filled) {
@@ -153,14 +143,12 @@ public final class SVGImage implements SVGElement {
                     throw new IllegalArgumentException(
                             String.format("Invalid opacity value: expected between 0.0 and 1.0 but was %f", opacity));
                 }
-                a = (byte) (((int) (opacity * 255.0)) & 0x000000ff);
+                a = ParseUtils.asByte((int) (opacity * 255.0));
             }
             color = new SVGColor(r, g, b, a);
             palette.add(color);
         }
-        final String colorName = palette.getName(color);
-
-        return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
+        return color;
     }
 
     public void draw(final ShapeRenderer sr) {
