@@ -21,6 +21,8 @@ import java.util.function.Consumer;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import org.openjdk.jol.info.GraphLayout;
+
 public class Main {
     public static void main(final String[] args) {
         String filename = null;
@@ -82,7 +84,13 @@ public class Main {
             System.exit(-1);
         }
 
+        // Needed to make jol's GraphLayout work
+        System.setProperty("jol.magicFieldOffset", "true");
+
         final SVGImage parsed = new SVGImage(filename);
+        System.out.printf(
+                "One runtime instance of this image occupies %,d bytes.\n",
+                GraphLayout.parseInstance(parsed).totalSize());
 
         if (showcase) {
             Showcase.run(width, height, new Consumer<>() {
