@@ -25,33 +25,55 @@ public class Main {
     public static void main(final String[] args) {
         String filename = null;
         boolean showcase = false;
+        int width = 1280;
+        int height = 720;
 
         for (final String arg : args) {
-            switch (arg) {
-                case "-h", "--help" -> {
-                    System.out.println(String.join(
-                            "\n",
-                            "",
-                            " svg2gdx - A converter from SVG to libGDX ShapeRenderer code.",
-                            "",
-                            "Usage: java -jar svg2gdx.jar [flags] FILE",
-                            "",
-                            "Flags:",
-                            " -h, --help  Shows this help message and exits.",
-                            " --test      Launches a sample libGDX app to see the converted image.",
-                            "",
-                            " FILE        The name of the .svg file to convert.",
-                            ""));
-                    System.exit(0);
+            if (arg.equals("-h") || arg.equals("--help")) {
+                System.out.println(String.join(
+                        "\n",
+                        "",
+                        " svg2gdx - A converter from SVG to libGDX ShapeRenderer code.",
+                        "",
+                        "Usage: java -jar svg2gdx.jar [flags] FILE",
+                        "",
+                        "Flags:",
+                        " -h, --help  Shows this help message and exits.",
+                        " --test      Launches a sample libGDX app to see the converted image.",
+                        " --width=W   Width in pixels of the sample app screen. Only available in combination with '--test'. Default: 1280.",
+                        " --height=H  Height in pixels of the sample app screen. Only available in combination with '--test'. Default: 720.",
+                        "",
+                        " FILE        The name of the .svg file to convert.",
+                        ""));
+                System.exit(0);
+            } else if (arg.equals("--test")) {
+                showcase = true;
+            } else if (arg.startsWith("--width=")) {
+                if (!showcase) {
+                    System.err.println("WARNING: Argument '--width' needs '--test' to work.");
                 }
-                case "--test" -> showcase = true;
-                default -> {
-                    if (filename != null) {
-                        System.err.println("Cannot set the filename twice.");
-                        System.exit(-1);
-                    }
-                    filename = arg;
+                final String value = arg.substring("--width=".length());
+                if (!value.chars().allMatch(Character::isDigit)) {
+                    System.err.printf("Expected an integer after '--width=' but was '%s'%n", value);
+                    System.exit(-1);
                 }
+                width = Integer.parseInt(value);
+            } else if (arg.startsWith("--height=")) {
+                if (!showcase) {
+                    System.err.println("WARNING: Argument '--height' needs '--test' to work.");
+                }
+                final String value = arg.substring("--height=".length());
+                if (!value.chars().allMatch(Character::isDigit)) {
+                    System.err.printf("Expected an integer after '--height=' but was '%s'%n", value);
+                    System.exit(-1);
+                }
+                height = Integer.parseInt(value);
+            } else {
+                if (filename != null) {
+                    System.err.println("Cannot set the filename twice.");
+                    System.exit(-1);
+                }
+                filename = arg;
             }
         }
 
@@ -63,7 +85,7 @@ public class Main {
         final SVGImage parsed = new SVGImage(filename);
 
         if (showcase) {
-            Showcase.run(new Consumer<>() {
+            Showcase.run(width, height, new Consumer<>() {
 
                 private static final int MAX_ITERATIONS = 100;
                 private int it = 0;

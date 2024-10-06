@@ -29,19 +29,17 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public final class Showcase extends Game {
 
     private final Consumer<ShapeRenderer> drawImage;
+    private final int width;
+    private final int height;
     private ShapeRenderer shapeRenderer;
 
-    private Showcase(final Consumer<ShapeRenderer> drawImage) {
+    private Showcase(final int width, final int height, final Consumer<ShapeRenderer> drawImage) {
         this.drawImage = Objects.requireNonNull(drawImage);
+        this.width = width;
+        this.height = height;
     }
 
-    public static void run(final Consumer<ShapeRenderer> drawImage) {
-        final Lwjgl3ApplicationConfiguration config = getLwjgl3ApplicationConfiguration();
-
-        new Lwjgl3Application(new Showcase(drawImage), config);
-    }
-
-    private static Lwjgl3ApplicationConfiguration getLwjgl3ApplicationConfiguration() {
+    public static void run(final int width, final int height, final Consumer<ShapeRenderer> drawImage) {
         final Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setForegroundFPS(60);
         config.setIdleFPS(30);
@@ -49,14 +47,15 @@ public final class Showcase extends Game {
         config.setTitle("svg2gdx - Showcase");
         config.useVsync(true);
         config.setDecorated(false);
-        config.setWindowedMode(1280, 720);
-        return config;
+        config.setWindowedMode(width, height);
+
+        new Lwjgl3Application(new Showcase(width, height, drawImage), config);
     }
 
     @Override
     public void create() {
         final OrthographicCamera camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1280, 720);
+        camera.setToOrtho(false, this.width, this.height);
         shapeRenderer = new ShapeRenderer();
         this.setScreen(new ShowcaseScreen(camera, this.shapeRenderer, this.drawImage));
     }
