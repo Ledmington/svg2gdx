@@ -1,169 +1,57 @@
 plugins {
-	id 'java'
 	id 'java-library'
-	id 'jacoco'
-	id 'pmd'
-	id 'com.github.spotbugs' version '6.0.23'
-	id 'com.diffplug.spotless' version '6.25.0'
-	id 'com.github.ben-manes.versions' version '0.51.0'
-	id 'de.undercouch.download' version '5.6.0'
-	id 'com.adarshr.test-logger' version '4.0.0'
+	id 'info.solidsoft.pitest' version '1.15.0'
+	id 'me.champeau.jmh' version '0.7.2'
 }
 
-repositories {
-	mavenCentral()
+dependencies {}
+
+pitest {
+	targetClasses.set(['com.ledmington.svg2gdx.*'])
+	targetTests.set(['com.ledmington.svg2gdx.*'])
+	pitestVersion = '1.17.0'
+	junit5PluginVersion = '1.2.1'
+	threads = 4
+	outputFormats.set(['XML', 'HTML'])
+	useClasspathFile = true     // useful with bigger projects on Windows
+	verbose = true
+	timestampedReports = false
 }
 
-static def path(String... args) {
-	return String.join(File.separator, args)
-}
-
-final String appName = 'svg2gdx'
-final String version = '0.1.0'
-final String appDescription = 'A converter from SVG to LibGDX ShapeRenderer code.'
-final String author = 'Filippo Barbari'
-final String authorMail = 'filippo.barbari@gmail.com'
-
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
-}
-
-final String junitVersion = '5.11.1'
-dependencies {
-	// testing stuff
-	testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-	testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-}
-
-tasks.withType(JavaCompile).configureEach {
-	options.compilerArgs << '-Xdiags:verbose'
-	options.compilerArgs << '-Xlint:all'
-	options.compilerArgs << '-Werror'
-	options.deprecation = true
-	options.encoding = 'UTF-8'
-}
-
-spotless {
-	format 'misc', {
-		target '*.gradle', '.gitignore'
-		trimTrailingWhitespace()
-		indentWithTabs()
-		endWithNewline()
-		setEncoding('utf-8')
-	}
-
-	java {
-		target fileTree('.') {
-			include path('**', '*.java')
-			exclude path('**', 'build', '**'), path('**', 'build-*', '**'), path('**', 'bin', '**')
-		}
-		removeUnusedImports()
-		formatAnnotations()
-		trimTrailingWhitespace()
-		endWithNewline()
-		setEncoding('utf-8')
-		palantirJavaFormat('2.50.0').formatJavadoc(true)
-
-		// check https://javadoc.io/doc/com.diffplug.spotless/spotless-plugin-gradle/latest/com/diffplug/gradle/spotless/JavaExtension.html
-		importOrder('java', 'javax', 'javafx', 'org.junit', 'com', 'com.ledmington', 'org', group as String)
-
-		licenseHeader String.join("\n",
-				"/*",
-				" * ${appName} - ${appDescription}",
-				" * Copyright (C) 2023-${new Date().format('yyyy')} ${author} <${authorMail}>",
-				" *",
-				" * This program is free software: you can redistribute it and/or modify",
-				" * it under the terms of the GNU General Public License as published by",
-				" * the Free Software Foundation, either version 3 of the License, or",
-				" * (at your option) any later version.",
-				" *",
-				" * This program is distributed in the hope that it will be useful,",
-				" * but WITHOUT ANY WARRANTY; without even the implied warranty of",
-				" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
-				" * GNU General Public License for more details.",
-				" *",
-				" * You should have received a copy of the GNU General Public License",
-				" * along with this program.  If not, see <http://www.gnu.org/licenses/>.",
-				" */",
-		)
-	}
-}
-
-javadoc {
-	failOnError = true
-	title "svg2gdx-v${version}-doc"
-	options.encoding = 'UTF-8'
-	options.addBooleanOption('Werror', true)
-}
-
-test {
-	useJUnitPlatform()
-	finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-	dependsOn test // tests are required to run before generating the report
-	reports {
-		html.required = true
-		html.outputLocation = layout.buildDirectory.dir('jacoco')
-	}
-}
-
-jacoco {
-	toolVersion = "0.8.12"
-	reportsDirectory = layout.buildDirectory.dir('jacoco')
-}
-
-testlogger {
-	theme 'standard'
-
-	showExceptions true
-	showStackTraces true
-	showFullStackTraces false
-	showCauses true
-
-	slowThreshold 2000
-
-	showSummary true
-	showSimpleNames false
-	showPassed false
-	showSkipped true
-	showFailed true
-	showOnlySlow false
-
-	showStandardStreams false
-	showPassedStandardStreams false
-	showSkippedStandardStreams false
-	showFailedStandardStreams true
-}
-
-pmd {
-	consoleOutput = true
-	toolVersion = "7.2.0"
-	rulesMinimumPriority = 5
-	threads = 1
-	incrementalAnalysis = true
-	ruleSetConfig = resources.text.fromFile(path("${project.rootDir}", "ruleset.xml"))
-}
-
-spotbugs {
-	toolVersion = '4.8.6'
-
-	ignoreFailures = false
-	showStackTraces = true
-	showProgress = false // too verbose for parallel output
-}
-
-tasks.compileJava.dependsOn(spotlessApply)
-tasks.build.dependsOn(tasks.javadoc)
-
-// cleanup tasks
-clean.dependsOn('cleanBin')
-
-// remove default VSCode build directory
-tasks.register('cleanBin', Delete) {
-	delete "${project.projectDir}/bin"
+jmh {
+	includes = ['com.ledmington.svg2gdx.*'] // include pattern (regular expression) for benchmarks to be executed
+	//excludes = ['some regular expression'] // exclude pattern (regular expression) for benchmarks to be executed
+	iterations = 10 // Number of measurement iterations to do.
+	//benchmarkMode = ['thrpt','ss'] // Benchmark mode. Available modes are: [Throughput/thrpt, AverageTime/avgt, SampleTime/sample, SingleShotTime/ss, All/all]
+	//batchSize = 1 // Batch size: number of benchmark method calls per operation. (some benchmark modes can ignore this setting)
+	fork = 2 // How many times to forks a single benchmark. Use 0 to disable forking altogether
+	failOnError = true // Should JMH fail immediately if any benchmark had experienced the unrecoverable error?
+	forceGC = false // Should JMH force GC between iterations?
+	//jvm = 'myjvm' // Custom JVM to use when forking.
+	jvmArgs = [/*'--add-modules', 'jdk.incubator.vector'*/]
+	//jvmArgsAppend = ['Custom JVM args to use when forking (append these)']
+	//jvmArgsPrepend =[ 'Custom JVM args to use when forking (prepend these)']
+	//humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt") // human-readable output file
+	resultsFile = project.file("${project.layout.buildDirectory.get()}/reports/jmh/results.txt") // results file
+	//operationsPerInvocation = 10 // Operations per invocation.
+	//benchmarkParameters =  [:] // Benchmark parameters.
+	//profilers = [] // Use profilers to collect additional data. Supported profilers: [cl, comp, gc, stack, perf, perfnorm, perfasm, xperf, xperfasm, hs_cl, hs_comp, hs_gc, hs_rt, hs_thr, async]
+	//timeOnIteration = '1s' // Time to spend at each measurement iteration.
+	resultFormat = 'TEXT' // Result format type (one of CSV, JSON, NONE, SCSV, TEXT)
+	//synchronizeIterations = true // Synchronize iterations?
+	threads = 1 // Number of worker threads to run with.
+	//threadGroups = [2,3,4] //Override thread group distribution for asymmetric benchmarks.
+	//jmhTimeout = '1s' // Timeout for benchmark iteration.
+	//timeUnit = 'ms' // Output time unit. Available time units are: [m, s, ms, us, ns].
+	verbosity = 'EXTRA' // Verbosity mode. Available modes are: [SILENT, NORMAL, EXTRA]
+	//warmup = '1s' // Time to spend at each warmup iteration.
+	//warmupBatchSize = 10 // Warmup batch size: number of benchmark method calls per operation.
+	//warmupForks = 0 // How many warmup forks to make for a single benchmark. 0 to disable warmup forks.
+	//warmupIterations = 1 // Number of warmup iterations to do.
+	//warmupMode = 'INDI' // Warmup mode for warming up selected benchmarks. Warmup modes are: [INDI, BULK, BULK_INDI].
+	//warmupBenchmarks = ['.*Warmup'] // Warmup benchmarks to include in the run in addition to already selected. JMH will not measure these benchmarks, but only use them for the warmup.
+	zip64 = true // Use ZIP64 format for bigger archives
+	jmhVersion = '1.37' // Specifies JMH version
+	//includeTests = true // Allows to include test sources into generate JMH jar, i.e. use it when benchmarks depend on the test classes.
+	//duplicateClassesStrategy = DuplicatesStrategy.FAIL // Strategy to apply when encountering duplicate classes during creation of the fat jar (i.e. while executing jmhJar task)
 }
