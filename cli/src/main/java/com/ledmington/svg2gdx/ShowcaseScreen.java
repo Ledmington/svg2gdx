@@ -32,6 +32,7 @@ public final class ShowcaseScreen implements Screen {
     private final ShapeRenderer sr;
     private final Consumer<ShapeRenderer> drawImage;
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Not needed here")
     public ShowcaseScreen(final Camera camera, final ShapeRenderer sr, final Consumer<ShapeRenderer> drawImage) {
         this.camera = Objects.requireNonNull(camera);
         this.sr = Objects.requireNonNull(sr);

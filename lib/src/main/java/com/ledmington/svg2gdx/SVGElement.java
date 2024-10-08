@@ -17,6 +17,13 @@
  */
 package com.ledmington.svg2gdx;
 
+/** An element of an SVG image. */
 public interface SVGElement {
+
+    /**
+     * Serializes this SVGElement into libGDX ShapeRenderer code.
+     *
+     * @return A possibly multi-line String containing valid java libGDX ShapeRenderer code.
+     */
     String toGDXShapeRenderer();
 }

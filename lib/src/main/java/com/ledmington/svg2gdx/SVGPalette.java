@@ -23,29 +23,42 @@ import java.util.Objects;
 
 public final class SVGPalette implements SVGElement {
 
+    private final Map<SVGColor, String> fromColorToName = new HashMap<>();
+    private final Map<String, SVGColor> fromNameToColor = new HashMap<>();
     private int id = 0;
-    private final Map<SVGColor, Integer> colors = new HashMap<>();
 
     public void add(final SVGColor color) {
-        if (colors.containsKey(color)) {
+        Objects.requireNonNull(color);
+        if (fromColorToName.containsKey(color)) {
             return;
         }
-        colors.put(Objects.requireNonNull(color), id++);
+        fromColorToName.put(color, "c" + id);
+        fromNameToColor.put("c" + id, color);
+        id++;
     }
 
     public String getName(final SVGColor color) {
-        if (!colors.containsKey(Objects.requireNonNull(color))) {
-            throw new IllegalArgumentException(String.format("Color '%s' not existing", color));
+        Objects.requireNonNull(color);
+        if (!fromColorToName.containsKey(color)) {
+            throw new IllegalArgumentException(String.format("Unknown color '%s'", color));
         }
-        return "c" + colors.get(color);
+        return fromColorToName.get(color);
+    }
+
+    public SVGColor getFromName(final String colorName) {
+        Objects.requireNonNull(colorName);
+        if (!fromNameToColor.containsKey(colorName)) {
+            throw new IllegalArgumentException(String.format("Unknown color name '%s'", colorName));
+        }
+        return fromNameToColor.get(colorName);
     }
 
     @Override
     public String toGDXShapeRenderer() {
         final StringBuilder sb = new StringBuilder();
-        for (final Map.Entry<SVGColor, Integer> e : colors.entrySet()) {
+        for (final Map.Entry<SVGColor, String> e : fromColorToName.entrySet()) {
             sb.append(String.format(
-                            "final Color c%s = %s", e.getValue(), e.getKey().toGDXShapeRenderer()))
+                            "final Color %s = %s", e.getValue(), e.getKey().toGDXShapeRenderer()))
                     .append('\n');
         }
         return sb.toString();

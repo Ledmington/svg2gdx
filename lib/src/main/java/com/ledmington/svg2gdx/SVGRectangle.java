@@ -19,18 +19,10 @@ package com.ledmington.svg2gdx;
 
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public final class SVGRectangle implements SVGElement {
-
-    private final double x;
-    private final double y;
-    private final double width;
-    private final double height;
-    private final boolean filled;
-    private final String colorName;
-
+record SVGRectangle(double x, double y, double width, double height, boolean filled, String colorName)
+        implements SVGElement {
     public SVGRectangle(
             final double x,
             final double y,
@@ -38,22 +30,24 @@ public final class SVGRectangle implements SVGElement {
             final double height,
             final boolean filled,
             final String colorName) {
+        if (width <= 0.0 || height <= 0.0) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid width and height arguments: %f %f", width, height));
+        }
+
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.filled = filled;
         this.colorName = Objects.requireNonNull(colorName);
-
-        if (width <= 0.0 || height <= 0.0) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid width and height arguments: %f %f", width, height));
-        }
     }
 
     public void draw(final ShapeRenderer sr, final SVGPalette palette) {
         sr.set(filled ? ShapeRenderer.ShapeType.Filled : ShapeRenderer.ShapeType.Line);
-        sr.setColor(Color.CYAN);
+        final SVGColor c = palette.getFromName(colorName);
+        sr.setColor(
+                ((float) c.r()) / 255.0f, ((float) c.g()) / 255.0f, ((float) c.b()) / 255.0f, ((float) c.a()) / 255.0f);
         sr.rect((float) x, (float) y, (float) width, (float) height);
     }
 

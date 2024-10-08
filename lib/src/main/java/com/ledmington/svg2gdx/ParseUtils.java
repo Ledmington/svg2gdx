@@ -19,10 +19,19 @@ package com.ledmington.svg2gdx;
 
 import java.util.Objects;
 
-public final class ParseUtils {
+/** Collection of utility methods for parsing. */
+final class ParseUtils {
+
     private ParseUtils() {}
 
-    /** Parses the given {@link String} as an hexadecimal 2-digit byte value. */
+    /**
+     * Parses the given {@link String} as an hexadecimal 2-digit byte value.
+     *
+     * <p>Examples: "0a" -> 10.
+     *
+     * @param s The 2-char hex string to be converted.
+     * @return The byte represented by this hex string.
+     */
     public static byte parseByteHex(final String s) {
         Objects.requireNonNull(s);
         if (s.length() != 2) {
@@ -42,14 +51,34 @@ public final class ParseUtils {
         };
     }
 
+    /**
+     * Returns the given 4-byte integer's rightmost byte.
+     *
+     * @param x The integer to be converted.
+     * @return The rightmost byte.
+     */
     public static byte asByte(final int x) {
         return (byte) (x & 0x000000ff);
     }
 
+    /**
+     * Computes the bitwise OR between the given arguments and returns it as a byte.
+     *
+     * @param a The left hand side.
+     * @param b The right hand side.
+     * @return The bitwise OR as a byte.
+     */
     public static byte or(final byte a, final byte b) {
         return asByte(a | b);
     }
 
+    /**
+     * Shifts the given byte to the left by the given amount and returns it as a byte.
+     *
+     * @param x The byte to be shifted.
+     * @param n The number of bits to shfit.
+     * @return The shifted value as a byte.
+     */
     public static byte shl(final byte x, final int n) {
         return asByte(x << n);
     }

@@ -17,138 +17,28 @@
  */
 package com.ledmington.svg2gdx;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg2gdx.path.SVGPath;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
+/** A parsed SVG image. Official reference available <a href="https://www.w3.org/TR/SVG2/">here</a>. */
 public final class SVGImage implements SVGElement {
 
     private final double width;
     private final double height;
-    private final SVGPalette palette = new SVGPalette();
-    private final List<SVGElement> elements = new ArrayList<>();
+    private final SVGPalette palette;
+    private final List<SVGElement> elements;
 
-    public SVGImage(final String inputFilename) {
-        final File inputFile = new File(inputFilename);
-        final DocumentBuilder dBuilder;
-        try {
-            dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        } catch (final ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-        final Document doc;
-        try {
-            doc = dBuilder.parse(inputFile);
-        } catch (final SAXException | IOException e) {
-            throw new RuntimeException(e);
-        }
-        doc.getDocumentElement().normalize();
-        final Element root = doc.getDocumentElement();
-        if (!root.getNodeName().equals("svg")) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid root element: expected 'svg' but was '%s'", root.getNodeName()));
-        }
-
-        width = Double.parseDouble(root.getAttributes().getNamedItem("width").getNodeValue());
-        height = Double.parseDouble(root.getAttributes().getNamedItem("height").getNodeValue());
-
-        final NodeList children = root.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            final Node node = children.item(i);
-            switch (node.getNodeName()) {
-                case "rect":
-                    elements.add(convertRect(node));
-                    break;
-                case "path":
-                    elements.add(convertPath(node));
-                    break;
-                case "defs":
-                case "metadata":
-                case "#text":
-                    // we don't care about these
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            String.format("Unknown element with name '%s'", node.getNodeName()));
-            }
-        }
-    }
-
-    private SVGRectangle convertRect(final Node node) {
-        final NamedNodeMap m = node.getAttributes();
-
-        final double width = Double.parseDouble(m.getNamedItem("width").getNodeValue());
-        final double height = Double.parseDouble(m.getNamedItem("height").getNodeValue());
-        final double x = Double.parseDouble(m.getNamedItem("x").getNodeValue());
-        final double y = Double.parseDouble(m.getNamedItem("y").getNodeValue());
-
-        final String style = m.getNamedItem("style").getNodeValue();
-        final Map<String, String> styleValues =
-                Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
-
-        final SVGColor color = parseColor(styleValues);
-        final boolean filled = styleValues.containsKey("fill");
-
-        return new SVGRectangle(x, y, width, height, filled, palette.getName(color));
-    }
-
-    private SVGPath convertPath(final Node node) {
-        final NamedNodeMap m = node.getAttributes();
-
-        if (m.getNamedItem("d") == null) {
-            throw new IllegalArgumentException("Expected a 'd' attribute for 'path' element");
-        }
-
-        final String style = m.getNamedItem("style").getNodeValue();
-        final Map<String, String> styleValues =
-                Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
-
-        final SVGColor color = parseColor(styleValues);
-        final String colorName = palette.getName(color);
-
-        return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
-    }
-
-    private SVGColor parseColor(final Map<String, String> styleValues) {
-        SVGColor color = new SVGColor();
-        final boolean filled = styleValues.containsKey("fill");
-        if (filled) {
-            final String hexColor = styleValues.get("fill").substring(1); // removing the starting '#'
-            final byte r = ParseUtils.parseByteHex(hexColor.substring(0, 2));
-            final byte g = ParseUtils.parseByteHex(hexColor.substring(2, 4));
-            final byte b = ParseUtils.parseByteHex(hexColor.substring(4, 6));
-            byte a = (byte) 0xff;
-            if (styleValues.containsKey("fill-opacity")) {
-                final double opacity = Double.parseDouble(styleValues.get("fill-opacity"));
-                if (opacity < 0.0 || opacity > 1.0) {
-                    throw new IllegalArgumentException(
-                            String.format("Invalid opacity value: expected between 0.0 and 1.0 but was %f", opacity));
-                }
-                a = ParseUtils.asByte((int) (opacity * 255.0));
-            }
-            color = new SVGColor(r, g, b, a);
-            palette.add(color);
-        }
-        return color;
+    public SVGImage(
+            final double width, final double height, final SVGPalette palette, final List<SVGElement> elements) {
+        this.width = width;
+        this.height = height;
+        this.palette = Objects.requireNonNull(palette);
+        this.elements = new ArrayList<>(Objects.requireNonNull(elements));
     }
 
     public void draw(final ShapeRenderer sr) {
@@ -174,10 +64,10 @@ public final class SVGImage implements SVGElement {
                 .append('\n')
                 .append(palette.toGDXShapeRenderer())
                 .append("final ShapeRenderer sr = @Place here your ShapeRenderer@;\n")
-                .append("float currentX=0.0f;\n")
-                .append("float currentY=0.0f;\n")
-                .append("float initialX=0.0f;\n")
-                .append("float initialY=0.0f;\n")
+                .append("float currentX = 0.0f;\n")
+                .append("float currentY = 0.0f;\n")
+                .append("float initialX = 0.0f;\n")
+                .append("float initialY = 0.0f;\n")
                 .append("sr.setAutoShapeType(true);\n")
                 .append("sr.begin();\n");
         for (final SVGElement elem : elements) {

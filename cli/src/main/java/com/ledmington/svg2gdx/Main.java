@@ -87,9 +87,9 @@ public class Main {
         // Needed to make jol's GraphLayout work
         System.setProperty("jol.magicFieldOffset", "true");
 
-        final SVGImage parsed = new SVGImage(filename);
+        final SVGImage parsed = SVGParser.parseImage(filename);
         System.out.printf(
-                "One runtime instance of this image occupies %,d bytes.\n",
+                "One runtime instance of this image occupies %,d bytes.%n",
                 GraphLayout.parseInstance(parsed).totalSize());
 
         if (showcase) {
@@ -109,7 +109,7 @@ public class Main {
                     if (it >= MAX_ITERATIONS) {
                         final double averageNanos = (double) totalTime / (double) MAX_ITERATIONS;
                         System.out.printf(
-                                "Drawing the image %,d times took %,d ns (%.3f ms) on average. At 60 FPS you could draw this image %,d times per frame.\n",
+                                "Drawing the image %,d times took %,d ns (%.3f ms) on average. At 60 FPS you could draw this image %,d times per frame.%n",
                                 MAX_ITERATIONS, (long) averageNanos, averageNanos / 1_000_000.0, (long)
                                         ((1.0 / 60.0) / (averageNanos / 1_000_000_000.0)));
                         it = 0;

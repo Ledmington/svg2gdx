@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.ledmington.svg2gdx.SVGColor;
 import com.ledmington.svg2gdx.SVGElement;
 import com.ledmington.svg2gdx.SVGPalette;
 
@@ -71,7 +71,9 @@ public final class SVGPath implements SVGElement {
     }
 
     public void draw(final ShapeRenderer sr, final SVGPalette palette) {
-        sr.setColor(Color.ORANGE);
+        final SVGColor c = palette.getFromName(colorName);
+        sr.setColor(
+                ((float) c.r()) / 255.0f, ((float) c.g()) / 255.0f, ((float) c.b()) / 255.0f, ((float) c.a()) / 255.0f);
 
         SVGPathPoint current = null;
         SVGPathPoint initial = null;

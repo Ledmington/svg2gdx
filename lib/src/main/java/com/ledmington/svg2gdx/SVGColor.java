@@ -17,60 +17,22 @@
  */
 package com.ledmington.svg2gdx;
 
-public final class SVGColor implements SVGElement, Comparable<SVGColor> {
+/** An RGBA color. */
+public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
 
-    private final int x;
-
-    public SVGColor(final byte r, final byte g, final byte b, final byte a) {
-        this.x = (asInt(r) << 24) | (asInt(g) << 16) | (asInt(b) << 8) | (asInt(a));
-    }
-
+    /** Creates a default RGBA color with all components set to 0 (black). */
     public SVGColor() {
-        this.x = 0x00000000;
+        this((byte) 0, (byte) 0, (byte) 0, (byte) 0);
     }
 
-    private int asInt(final byte b) {
-        return ((int) b) & 0x000000ff;
-    }
-
-    private double asDouble(final int i) {
-        return ((double) (i)) / 255.0;
+    private double asDouble(final byte x) {
+        return ((double) x) / 255.0;
     }
 
     @Override
     public String toGDXShapeRenderer() {
         return String.format(
-                "new Color(%sf,%sf,%sf,%sf); // #%08X",
-                asDouble((x >>> 24) & 0x000000ff),
-                asDouble((x >>> 16) & 0x000000ff),
-                asDouble((x >>> 8) & 0x000000ff),
-                asDouble(x & 0x000000ff),
-                x);
-    }
-
-    @Override
-    public int compareTo(final SVGColor other) {
-        return Integer.compare(this.x, other.x);
-    }
-
-    public String toString() {
-        return String.format("#%08X", x);
-    }
-
-    public int hashCode() {
-        return x;
-    }
-
-    public boolean equals(final Object other) {
-        if (other == null) {
-            return false;
-        }
-        if (this == other) {
-            return true;
-        }
-        if (!this.getClass().equals(other.getClass())) {
-            return false;
-        }
-        return this.x == ((SVGColor) other).x;
+                "new Color(%sf,%sf,%sf,%sf); // #%02X%02X%02X%02X",
+                asDouble(r), asDouble(g), asDouble(b), asDouble(a), r, g, b, a);
     }
 }

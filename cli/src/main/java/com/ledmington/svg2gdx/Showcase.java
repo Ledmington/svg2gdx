@@ -56,13 +56,13 @@ public final class Showcase extends Game {
     public void create() {
         final OrthographicCamera camera = new OrthographicCamera();
         camera.setToOrtho(false, this.width, this.height);
-        shapeRenderer = new ShapeRenderer();
+        this.shapeRenderer = new ShapeRenderer();
         this.setScreen(new ShowcaseScreen(camera, this.shapeRenderer, this.drawImage));
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        shapeRenderer.dispose();
+        this.shapeRenderer.dispose();
     }
 }
