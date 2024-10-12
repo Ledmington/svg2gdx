@@ -17,7 +17,14 @@
  */
 package com.ledmington.svg2gdx;
 
-/** An RGBA color. */
+/**
+ * An RGBA color.
+ *
+ * @param r The red component.
+ * @param g The green component.
+ * @param b The blue component.
+ * @param a The alpha component.
+ */
 public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
 
     /** Creates a default RGBA color with all components set to 0 (black). */

@@ -22,7 +22,7 @@ ext.appNameLowerCase = appName.toLowerCase(Locale.US)
 String author = 'Filippo Barbari'
 String authorMail = 'filippo.barbari@gmail.com'
 
-ext.junitVersion = '5.11.1'
+ext.junitVersion = '5.11.2'
 // End tunables
 
 allprojects {
@@ -152,6 +152,7 @@ spotless {
         removeUnusedImports()
         formatAnnotations()
         trimTrailingWhitespace()
+        indentWithTabs()
         endWithNewline()
         setEncoding('utf-8')
         palantirJavaFormat('2.50.0').formatJavadoc(true)

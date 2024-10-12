@@ -17,32 +17,62 @@
  */
 package com.ledmington.svg2gdx;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 public final class SVGPalette implements SVGElement {
 
-    private final Map<SVGColor, String> fromColorToName = new HashMap<>();
-    private final Map<String, SVGColor> fromNameToColor = new HashMap<>();
-    private int id = 0;
+    static final class SVGPaletteBuilder {
 
-    public void add(final SVGColor color) {
-        Objects.requireNonNull(color);
-        if (fromColorToName.containsKey(color)) {
-            return;
+        private final Map<SVGColor, String> fromColorToName = new HashMap<>();
+        private final Map<String, SVGColor> fromNameToColor = new HashMap<>();
+        private int id = 0;
+
+        public SVGPaletteBuilder() {}
+
+        public void add(final SVGColor color) {
+            Objects.requireNonNull(color);
+            if (fromColorToName.containsKey(color)) {
+                return;
+            }
+            final String name = "c" + id;
+            fromColorToName.put(color, name);
+            fromNameToColor.put(name, color);
+            id++;
         }
-        fromColorToName.put(color, "c" + id);
-        fromNameToColor.put("c" + id, color);
-        id++;
+
+        public String getName(final SVGColor color) {
+            Objects.requireNonNull(color);
+            if (!fromColorToName.containsKey(color)) {
+                throw new IllegalArgumentException(String.format("Unknown color '%s'", color));
+            }
+            return fromColorToName.get(color);
+        }
+
+        public SVGPalette build() {
+            return new SVGPalette(fromColorToName, fromNameToColor);
+        }
     }
 
-    public String getName(final SVGColor color) {
-        Objects.requireNonNull(color);
-        if (!fromColorToName.containsKey(color)) {
-            throw new IllegalArgumentException(String.format("Unknown color '%s'", color));
+    public static SVGPaletteBuilder builder() {
+        return new SVGPaletteBuilder();
+    }
+
+    // TODO: refactor with a BiMap
+    private final Map<SVGColor, String> fromColorToName;
+    private final Map<String, SVGColor> fromNameToColor;
+
+    private SVGPalette(final Map<SVGColor, String> fromColorToName, final Map<String, SVGColor> fromNameToColor) {
+        Objects.requireNonNull(fromColorToName);
+        Objects.requireNonNull(fromNameToColor);
+        if (fromColorToName.size() != fromNameToColor.size()) {
+            throw new IllegalArgumentException(
+                    String.format("Different sizes: %,d and %,d", fromColorToName.size(), fromNameToColor.size()));
         }
-        return fromColorToName.get(color);
+        this.fromColorToName = Collections.unmodifiableMap(fromColorToName);
+        this.fromNameToColor = Collections.unmodifiableMap(fromNameToColor);
     }
 
     public SVGColor getFromName(final String colorName) {

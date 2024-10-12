@@ -21,6 +21,18 @@ import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+/**
+ * A rectangle aligned with the axis. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/shapes.html#RectElement">here</a>.
+ *
+ * @param x x coordinate of the left side of the rectangle.
+ * @param y y coordinate of the top side of the rectangle.
+ * @param width The width of the rectangle.
+ * @param height The height of the rectangle.
+ * @param filled Whether this rectangle is filled with color or not. If not filled, its color applies only to the
+ *     borders.
+ * @param colorName The name of the color of this rectangle.
+ */
 record SVGRectangle(double x, double y, double width, double height, boolean filled, String colorName)
         implements SVGElement {
     public SVGRectangle(

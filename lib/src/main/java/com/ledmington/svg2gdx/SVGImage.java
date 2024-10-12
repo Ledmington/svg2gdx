@@ -17,7 +17,7 @@
  */
 package com.ledmington.svg2gdx;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,12 +33,23 @@ public final class SVGImage implements SVGElement {
     private final SVGPalette palette;
     private final List<SVGElement> elements;
 
+	/**
+	 * Creates a new SVGImage with the given data.
+	 *
+	 * @param width The width of the image.
+	 * @param height The height of the image.
+	 * @param palette The palette of colors to be used when rendering.
+	 * @param elements The inner elements of this image.
+	 */
     public SVGImage(
             final double width, final double height, final SVGPalette palette, final List<SVGElement> elements) {
+        if (width < 0.0 || height < 0.0) {
+            throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
+        }
         this.width = width;
         this.height = height;
         this.palette = Objects.requireNonNull(palette);
-        this.elements = new ArrayList<>(Objects.requireNonNull(elements));
+        this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
     }
 
     public void draw(final ShapeRenderer sr) {

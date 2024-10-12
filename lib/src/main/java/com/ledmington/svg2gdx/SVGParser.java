@@ -61,7 +61,7 @@ public final class SVGParser {
         final double imageHeight =
                 Double.parseDouble(root.getAttributes().getNamedItem("height").getNodeValue());
 
-        final SVGPalette palette = new SVGPalette();
+        final SVGPalette.SVGPaletteBuilder palette = SVGPalette.builder();
 
         final List<SVGElement> elements = new ArrayList<>();
         final NodeList children = root.getChildNodes();
@@ -85,10 +85,10 @@ public final class SVGParser {
             }
         }
 
-        return new SVGImage(imageWidth, imageHeight, palette, elements);
+        return new SVGImage(imageWidth, imageHeight, palette.build(), elements);
     }
 
-    private static SVGRectangle convertRect(final Node node, final SVGPalette palette) {
+    private static SVGRectangle convertRect(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
         final NamedNodeMap m = node.getAttributes();
 
         final double rectWidth = Double.parseDouble(m.getNamedItem("width").getNodeValue());
@@ -106,7 +106,7 @@ public final class SVGParser {
         return new SVGRectangle(rectX, rectY, rectWidth, rectHeight, filled, palette.getName(color));
     }
 
-    private static SVGPath convertPath(final Node node, final SVGPalette palette) {
+    private static SVGPath convertPath(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
         final NamedNodeMap m = node.getAttributes();
 
         if (m.getNamedItem("d") == null) {
@@ -123,15 +123,16 @@ public final class SVGParser {
         return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
     }
 
-    private static SVGColor parseColor(final Map<String, String> styleValues, final SVGPalette palette) {
+    private static SVGColor parseColor(
+            final Map<String, String> styleValues, final SVGPalette.SVGPaletteBuilder palette) {
         if (!styleValues.containsKey("fill")) {
             return new SVGColor();
         }
 
-        final String hexColor = styleValues.get("fill").substring(1); // removing the starting '#'
-        final byte r = ParseUtils.parseByteHex(hexColor.substring(0, 2));
-        final byte g = ParseUtils.parseByteHex(hexColor.substring(2, 4));
-        final byte b = ParseUtils.parseByteHex(hexColor.substring(4, 6));
+        final String hexColor = styleValues.get("fill");
+        final byte r = ParseUtils.parseByteHex(hexColor.substring(1, 3));
+        final byte g = ParseUtils.parseByteHex(hexColor.substring(3, 5));
+        final byte b = ParseUtils.parseByteHex(hexColor.substring(5, 7));
         byte a = (byte) 0xff;
         if (styleValues.containsKey("fill-opacity")) {
             final double opacity = Double.parseDouble(styleValues.get("fill-opacity"));
