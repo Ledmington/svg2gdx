@@ -20,22 +20,28 @@ package com.ledmington.svg2gdx;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 public final class ShowcaseScreen implements Screen {
 
     private final Camera camera;
     private final ShapeRenderer sr;
     private final Consumer<ShapeRenderer> drawImage;
+    private final Color background;
 
     @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Not needed here")
-    public ShowcaseScreen(final Camera camera, final ShapeRenderer sr, final Consumer<ShapeRenderer> drawImage) {
+    public ShowcaseScreen(
+            final Camera camera,
+            final ShapeRenderer sr,
+            final Color background,
+            final Consumer<ShapeRenderer> drawImage) {
         this.camera = Objects.requireNonNull(camera);
         this.sr = Objects.requireNonNull(sr);
+        this.background = Objects.requireNonNull(background);
         this.drawImage = Objects.requireNonNull(drawImage);
     }
 
@@ -46,8 +52,7 @@ public final class ShowcaseScreen implements Screen {
 
     @Override
     public void render(final float delta) {
-        Gdx.gl.glClearColor(1, 1, 1, 1);
-        Gdx.gl.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+        ScreenUtils.clear(this.background, true);
 
         this.camera.update();
         this.drawImage.accept(this.sr);

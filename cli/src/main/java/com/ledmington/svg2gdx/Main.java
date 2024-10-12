@@ -19,6 +19,7 @@ package com.ledmington.svg2gdx;
 
 import java.util.function.Consumer;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import org.openjdk.jol.info.GraphLayout;
@@ -29,6 +30,7 @@ public class Main {
         boolean showcase = false;
         int width = 1280;
         int height = 720;
+        Color background = Color.WHITE;
 
         for (final String arg : args) {
             if (arg.equals("-h") || arg.equals("--help")) {
@@ -40,10 +42,11 @@ public class Main {
                         "Usage: java -jar svg2gdx.jar [flags] FILE",
                         "",
                         "Flags:",
-                        " -h, --help  Shows this help message and exits.",
-                        " --test      Launches a sample libGDX app to see the converted image.",
-                        " --width=W   Width in pixels of the sample app screen. Only available in combination with '--test'. Default: 1280.",
-                        " --height=H  Height in pixels of the sample app screen. Only available in combination with '--test'. Default: 720.",
+                        " -h, --help          Shows this help message and exits.",
+                        " --test              Launches a sample libGDX app to see the converted image.",
+                        " --width=W           Width in pixels of the sample app screen. Only available in combination with '--test'. Default: 1280.",
+                        " --height=H          Height in pixels of the sample app screen. Only available in combination with '--test'. Default: 720.",
+                        " --background=COLOR  Selects the color of the background when displaying the image. Only available in combination with '--test'. Can be 'black', 'white' or an hexadecimal RGBA value. Default: 'white'.",
                         "",
                         " FILE        The name of the .svg file to convert.",
                         ""));
@@ -54,7 +57,7 @@ public class Main {
                 if (!showcase) {
                     System.err.println("WARNING: Argument '--width' needs '--test' to work.");
                 }
-                final String value = arg.substring("--width=".length());
+                final String value = arg.substring(arg.indexOf('=') + 1);
                 if (!value.chars().allMatch(Character::isDigit)) {
                     System.err.printf("Expected an integer after '--width=' but was '%s'%n", value);
                     System.exit(-1);
@@ -64,12 +67,39 @@ public class Main {
                 if (!showcase) {
                     System.err.println("WARNING: Argument '--height' needs '--test' to work.");
                 }
-                final String value = arg.substring("--height=".length());
+                final String value = arg.substring(arg.indexOf('=') + 1);
                 if (!value.chars().allMatch(Character::isDigit)) {
                     System.err.printf("Expected an integer after '--height=' but was '%s'%n", value);
                     System.exit(-1);
                 }
                 height = Integer.parseInt(value);
+            } else if (arg.startsWith("--background=")) {
+                if (!showcase) {
+                    System.err.println("WARNING: Argument '--background' needs '--test' to work.");
+                }
+                String value = arg.substring(arg.indexOf('=') + 1);
+                if (value.equals("white")) {
+                    background = Color.WHITE;
+                } else if (value.equals("black")) {
+                    background = Color.BLACK;
+                } else {
+                    if (value.startsWith("0x")) {
+                        value = value.substring(2);
+                    }
+                    if (value.length() != 8) {
+                        System.err.printf("Expected an hex RGBA color after '--background=' but was '%s'%n", value);
+                        System.exit(-1);
+                    }
+                    final byte r = ParseUtils.parseByteHex(value.substring(0, 2));
+                    final byte g = ParseUtils.parseByteHex(value.substring(2, 4));
+                    final byte b = ParseUtils.parseByteHex(value.substring(4, 6));
+                    final byte a = ParseUtils.parseByteHex(value.substring(6, 8));
+                    background = new Color(
+                            ParseUtils.byteToFloat(r),
+                            ParseUtils.byteToFloat(g),
+                            ParseUtils.byteToFloat(b),
+                            ParseUtils.byteToFloat(a));
+                }
             } else {
                 if (filename != null) {
                     System.err.println("Cannot set the filename twice.");
@@ -93,7 +123,7 @@ public class Main {
                 GraphLayout.parseInstance(parsed).totalSize());
 
         if (showcase) {
-            Showcase.run(width, height, new Consumer<>() {
+            Showcase.run(width, height, background, new Consumer<>() {
 
                 private static final int MAX_ITERATIONS = 100;
                 private int it = 0;

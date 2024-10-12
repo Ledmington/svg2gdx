@@ -33,14 +33,14 @@ public final class SVGImage implements SVGElement {
     private final SVGPalette palette;
     private final List<SVGElement> elements;
 
-	/**
-	 * Creates a new SVGImage with the given data.
-	 *
-	 * @param width The width of the image.
-	 * @param height The height of the image.
-	 * @param palette The palette of colors to be used when rendering.
-	 * @param elements The inner elements of this image.
-	 */
+    /**
+     * Creates a new SVGImage with the given data.
+     *
+     * @param width The width of the image.
+     * @param height The height of the image.
+     * @param palette The palette of colors to be used when rendering.
+     * @param elements The inner elements of this image.
+     */
     public SVGImage(
             final double width, final double height, final SVGPalette palette, final List<SVGElement> elements) {
         if (width < 0.0 || height < 0.0) {
