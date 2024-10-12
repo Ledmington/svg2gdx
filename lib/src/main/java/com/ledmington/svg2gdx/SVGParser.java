@@ -48,8 +48,7 @@ public final class SVGParser {
 
     private SVGParser() {}
 
-    public static SVGImage parseImage(final String inputFilename) {
-        final File inputFile = new File(inputFilename);
+    public static SVGImage parseImage(final File inputFile) {
         final Document doc;
         try {
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputFile);

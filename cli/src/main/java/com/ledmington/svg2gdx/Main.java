@@ -17,6 +17,7 @@
  */
 package com.ledmington.svg2gdx;
 
+import java.io.File;
 import java.util.function.Consumer;
 
 import com.badlogic.gdx.graphics.Color;
@@ -117,7 +118,7 @@ public class Main {
         // Needed to make jol's GraphLayout work
         System.setProperty("jol.magicFieldOffset", "true");
 
-        final SVGImage parsed = SVGParser.parseImage(filename);
+        final SVGImage parsed = SVGParser.parseImage(new File(filename));
         System.out.printf(
                 "One runtime instance of this image occupies %,d bytes.%n",
                 GraphLayout.parseInstance(parsed).totalSize());
