@@ -17,4 +17,9 @@
  */
 package com.ledmington.svg2gdx.path;
 
-public record SVGPathBezierAbsolute() implements SVGPathElement {}
+/**
+ * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
+ */
+public record SVGPathBezier(boolean isRelative, java.util.List<SVGPathBezierElement> elements)
+        implements SVGPathElement {}

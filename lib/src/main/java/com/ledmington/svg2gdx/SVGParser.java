@@ -28,8 +28,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.ledmington.svg2gdx.path.SVGPath;
-import com.ledmington.svg2gdx.path.SVGPathBezierAbsolute;
-import com.ledmington.svg2gdx.path.SVGPathBezierRelative;
+import com.ledmington.svg2gdx.path.SVGPathBezier;
+import com.ledmington.svg2gdx.path.SVGPathBezierElement;
 import com.ledmington.svg2gdx.path.SVGPathClosepath;
 import com.ledmington.svg2gdx.path.SVGPathElement;
 import com.ledmington.svg2gdx.path.SVGPathLinetoAbsolute;
@@ -149,7 +149,7 @@ public final class SVGParser {
     }
 
     private static List<SVGPathElement> parsePath(final String pathString) {
-        final List<SVGPathElement> elements = new ArrayList<>();
+        final List<SVGPathElement> pathElements = new ArrayList<>();
         final String[] pathData = pathString.split(" ");
 
         if (!pathData[0].equals("m") && !pathData[0].equals("M")) {
@@ -180,10 +180,20 @@ public final class SVGParser {
                             yield new SVGPathMoveto(isRelative, initialPoint, implicitLines);
                         }
 
-                            // "Bezier" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands)
-                        case "c" -> new SVGPathBezierRelative();
-                        case "C" -> new SVGPathBezierAbsolute();
+                            // Relative/Absolute "Bezier" command
+                        case "c", "C" -> {
+                            final boolean isRelative = elem.equals("c");
+                            i++;
+                            final List<SVGPathBezierElement> elements = new ArrayList<>();
+                            for (; i + 2 < pathData.length; i += 3) {
+                                elements.add(new SVGPathBezierElement(
+                                        parsePathPoint(pathData[i]),
+                                        parsePathPoint(pathData[i + 1]),
+                                        parsePathPoint(pathData[i + 2])));
+                            }
+
+                            yield new SVGPathBezier(isRelative, elements);
+                        }
 
                             // "lineto" commands
                             // (https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands)
@@ -197,10 +207,10 @@ public final class SVGParser {
                         default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", elem));
                     };
 
-            elements.add(x);
+            pathElements.add(x);
         }
 
-        return elements;
+        return pathElements;
     }
 
     private static SVGColor parseColor(

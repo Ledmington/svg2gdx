@@ -17,4 +17,5 @@
  */
 package com.ledmington.svg2gdx.path;
 
-public record SVGPathBezierRelative() implements SVGPathElement {}
+public record SVGPathBezierElement(
+        SVGPathPoint startControlPoint, SVGPathPoint endControlPoint, SVGPathPoint centralPoint) {}

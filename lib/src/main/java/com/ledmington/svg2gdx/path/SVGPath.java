@@ -98,43 +98,34 @@ public final class SVGPath implements SVGElement {
                         current = next;
                     }
                 }
-                case SVGPathBezierAbsolute ignored -> {
-                    i++;
-                    current = (SVGPathPoint) elements.get(i);
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
-                        final SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
-                        final SVGPathPoint end = (SVGPathPoint) elements.get(i++);
-                        sr.curve(
-                                (float) current.x(),
-                                (float) current.y(),
-                                (float) c1.x(),
-                                (float) c1.y(),
-                                (float) c2.x(),
-                                (float) c2.y(),
-                                (float) end.x(),
-                                (float) end.y(),
-                                DEFAULT_CURVE_SEGMENTS);
-                        current = end;
-                    }
-                }
-                case SVGPathBezierRelative ignored -> {
-                    i++;
-                    current = (SVGPathPoint) elements.get(i);
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
-                        final SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
-                        final SVGPathPoint end = (SVGPathPoint) elements.get(i++);
-                        sr.curve(
-                                (float) current.x(),
-                                (float) current.y(),
-                                (float) (current.x() + c1.x()),
-                                (float) (current.y() + c1.y()),
-                                (float) (current.x() + c2.x()),
-                                (float) (current.y() + c2.y()),
-                                (float) (current.x() + end.x()),
-                                (float) (current.y() + end.y()),
-                                DEFAULT_CURVE_SEGMENTS);
+                case SVGPathBezier b -> {
+                    for (final SVGPathBezierElement bezElem : b.elements()) {
+                        final SVGPathPoint c1 = bezElem.startControlPoint();
+                        final SVGPathPoint c2 = bezElem.endControlPoint();
+                        final SVGPathPoint end = bezElem.centralPoint();
+                        if (b.isRelative()) {
+                            sr.curve(
+                                    (float) current.x(),
+                                    (float) current.y(),
+                                    (float) (current.x() + c1.x()),
+                                    (float) (current.y() + c1.y()),
+                                    (float) (current.x() + c2.x()),
+                                    (float) (current.y() + c2.y()),
+                                    (float) (current.x() + end.x()),
+                                    (float) (current.y() + end.y()),
+                                    DEFAULT_CURVE_SEGMENTS);
+                        } else {
+                            sr.curve(
+                                    (float) current.x(),
+                                    (float) current.y(),
+                                    (float) c1.x(),
+                                    (float) c1.y(),
+                                    (float) c2.x(),
+                                    (float) c2.y(),
+                                    (float) end.x(),
+                                    (float) end.y(),
+                                    DEFAULT_CURVE_SEGMENTS);
+                        }
                         current = end;
                     }
                 }
@@ -242,38 +233,37 @@ public final class SVGPath implements SVGElement {
                                 .append("f;\n");
                     }
                 }
-                case SVGPathBezierAbsolute ignored -> {
-                    i++;
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
-                        SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
-                        SVGPathPoint end = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format(
-                                        "sr.curve(currentX, currentY, %sf, %sf, %sf, %sf, %sf, %sf, %d);",
-                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
-                                .append('\n')
-                                .append("currentX = ")
-                                .append(end.x())
-                                .append("f;\ncurrentY = ")
-                                .append(end.y())
-                                .append("f;\n");
-                    }
-                }
-                case SVGPathBezierRelative ignored -> {
-                    i++;
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
-                        SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
-                        SVGPathPoint end = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format(
-                                        "sr.curve(currentX, currentY, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, %d);",
-                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
-                                .append('\n')
-                                .append("currentX = ")
-                                .append(end.x())
-                                .append("f;\ncurrentY = ")
-                                .append(end.y())
-                                .append("f;\n");
+                case SVGPathBezier b -> {
+                    if (b.isRelative()) {
+                        while (elements.get(i) instanceof SVGPathPoint) {
+                            SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
+                            SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
+                            SVGPathPoint end = (SVGPathPoint) elements.get(i++);
+                            sb.append(String.format(
+                                            "sr.curve(currentX, currentY, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, %d);",
+                                            c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(end.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(end.y())
+                                    .append("f;\n");
+                        }
+                    } else {
+                        while (elements.get(i) instanceof SVGPathPoint) {
+                            SVGPathPoint c1 = (SVGPathPoint) elements.get(i++);
+                            SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
+                            SVGPathPoint end = (SVGPathPoint) elements.get(i++);
+                            sb.append(String.format(
+                                            "sr.curve(currentX, currentY, %sf, %sf, %sf, %sf, %sf, %sf, %d);",
+                                            c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(end.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(end.y())
+                                    .append("f;\n");
+                        }
                     }
                 }
                 case SVGPathClosepath ignored -> {
