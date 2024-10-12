@@ -32,14 +32,17 @@ public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
         this((byte) 0, (byte) 0, (byte) 0, (byte) 0);
     }
 
-    private double asDouble(final byte x) {
-        return ((double) x) / 255.0;
-    }
-
     @Override
     public String toGDXShapeRenderer() {
         return String.format(
-                "new Color(%sf,%sf,%sf,%sf); // #%02X%02X%02X%02X",
-                asDouble(r), asDouble(g), asDouble(b), asDouble(a), r, g, b, a);
+                "new Color(%sf, %sf, %sf, %sf); // #%02X%02X%02X%02X",
+                ParseUtils.byteToFloat(r),
+                ParseUtils.byteToFloat(g),
+                ParseUtils.byteToFloat(b),
+                ParseUtils.byteToFloat(a),
+                r,
+                g,
+                b,
+                a);
     }
 }

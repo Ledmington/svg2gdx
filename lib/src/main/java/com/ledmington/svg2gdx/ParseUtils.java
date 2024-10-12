@@ -82,4 +82,9 @@ final class ParseUtils {
     public static byte shl(final byte x, final int n) {
         return asByte(x << n);
     }
+
+    public static float byteToFloat(final byte x) {
+        final double y = x >= 0 ? (double) x : (double) x + 256.0;
+        return (float) (y / 255.0);
+    }
 }
