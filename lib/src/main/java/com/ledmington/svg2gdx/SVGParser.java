@@ -36,6 +36,7 @@ import com.ledmington.svg2gdx.path.SVGPathLineto;
 import com.ledmington.svg2gdx.path.SVGPathMoveto;
 import com.ledmington.svg2gdx.path.SVGPathPoint;
 
+import com.ledmington.svg2gdx.path.SVGSubPath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -138,7 +139,7 @@ public final class SVGParser {
             throw new IllegalArgumentException("Expected a 'd' attribute for 'path' element");
         }
 
-        return new SVGPath(parsePath(m.getNamedItem("d").getNodeValue()), colorName);
+        return parsePath(m.getNamedItem("d").getNodeValue(), colorName);
     }
 
     private static SVGPathPoint parsePathPoint(final String pointData) {
@@ -147,20 +148,28 @@ public final class SVGParser {
                 Double.parseDouble(pointData.substring(0, idx)), Double.parseDouble(pointData.substring(idx + 1)));
     }
 
-    private static List<SVGPathElement> parsePath(final String pathString) {
-        final List<SVGPathElement> pathElements = new ArrayList<>();
+    private static SVGPath parsePath(final String pathString,final String colorName) {
+        final List<SVGSubPath> subpaths = new ArrayList<>();
+final String[] splitted = pathString.split("[zZ] +[mM]");
+for(final String subpath : splitted){
+    subpaths.add(parseSubPath(subpath));
+}
+        return new SVGPath(colorName,subpaths);
+    }
+
+    private static SVGSubPath parseSubPath(final String pathString) {
+        final List<SVGPathElement> subPathElements = new ArrayList<>();
         final String[] pathData = pathString.split(" ");
 
         if (!pathData[0].equals("m") && !pathData[0].equals("M")) {
             throw new IllegalArgumentException(
-                    String.format("Invalid path data: must start with 'm' or 'M' but was '%s'", pathData[0]));
+                    String.format("Invalid subpath data: must start with 'm' or 'M' but was '%s'", pathData[0]));
         }
 
         for (int i = 0; i < pathData.length; i++) {
             final String elem = pathData[i];
             final SVGPathElement x =
                     switch (elem) {
-
                             // Relative/Absolute "moveto" command
                         case "m", "M" -> {
                             final boolean isRelative = elem.equals("m");
@@ -209,13 +218,21 @@ public final class SVGParser {
                             // (https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand)
                         case "z", "Z" -> new SVGPathClosepath();
 
-                        default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", elem));
+                        default -> throw new IllegalArgumentException(String.format("Unknown subpath element '%s'", elem));
                     };
 
-            pathElements.add(x);
+            subPathElements.add(x);
+
+            if(x instanceof SVGPathClosepath){
+                break;
+            }
         }
 
-        return pathElements;
+        if(!(subPathElements.getLast() instanceof SVGPathClosepath)){
+            throw new IllegalArgumentException(String.format("Wrong subpath format: expected to end with 'z' or 'Z' but ended with '%s'",subPathElements.getLast()));
+        }
+
+        return new SVGSubPath(subPathElements);
     }
 
     private static SVGColor parseColor(
