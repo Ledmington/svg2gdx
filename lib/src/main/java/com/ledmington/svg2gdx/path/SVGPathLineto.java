@@ -17,4 +17,8 @@
  */
 package com.ledmington.svg2gdx.path;
 
-public record SVGPathLinetoAbsolute() implements SVGPathElement {}
+/**
+ * An SVG "lineto" command. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
+ */
+public record SVGPathLineto(boolean isRelative, java.util.List<SVGPathPoint> points) implements SVGPathElement {}

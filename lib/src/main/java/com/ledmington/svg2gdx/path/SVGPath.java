@@ -79,23 +79,18 @@ public final class SVGPath implements SVGElement {
                         }
                     }
                 }
-                case SVGPathLinetoAbsolute ignored -> {
-                    i++;
-                    current = (SVGPathPoint) elements.get(i++);
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
-                        current = next;
-                    }
-                }
-                case SVGPathLinetoRelative ignored -> {
-                    i++;
-                    current = (SVGPathPoint) elements.get(i++);
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
-                                (current.y() + next.y()));
-                        current = next;
+                case SVGPathLineto l -> {
+                    if (l.isRelative()) {
+                        for (final SVGPathPoint next : l.points()) {
+                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
+                                    (current.y() + next.y()));
+                            current = next;
+                        }
+                    } else {
+                        for (final SVGPathPoint next : l.points()) {
+                            sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
+                            current = next;
+                        }
                     }
                 }
                 case SVGPathBezier b -> {
@@ -193,44 +188,34 @@ public final class SVGPath implements SVGElement {
                         }
                     }
                 }
-                case SVGPathLinetoAbsolute ignored -> {
-                    i++;
-                    final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
+                case SVGPathLineto l -> {
                     sb.append("currentX = ")
-                            .append(current.x())
+                            .append(l.points().getFirst().x())
                             .append("f;\ncurrentY = ")
-                            .append(current.y())
+                            .append(l.points().getFirst().y())
                             .append("f;\n");
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format("sr.line(currentX, currentY, %sf, %sf);", next.x(), next.y()))
-                                .append('\n')
-                                .append("currentX = ")
-                                .append(next.x())
-                                .append("f;\ncurrentY = ")
-                                .append(next.y())
-                                .append("f;\n");
-                    }
-                }
-                case SVGPathLinetoRelative ignored -> {
-                    i++;
-                    final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
-                    sb.append("currentX = ")
-                            .append(current.x())
-                            .append("f;\ncurrentY = ")
-                            .append(current.y())
-                            .append("f;\n");
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format(
-                                        "sr.line(currentX, currentY, currentX + %sf, currentY + %sf);",
-                                        next.x(), next.y()))
-                                .append('\n')
-                                .append("currentX = ")
-                                .append(next.x())
-                                .append("f;\ncurrentY = ")
-                                .append(next.y())
-                                .append("f;\n");
+                    if (l.isRelative()) {
+                        for (final SVGPathPoint next : l.points()) {
+                            sb.append(String.format(
+                                            "sr.line(currentX, currentY, currentX + %sf, currentY + %sf);",
+                                            next.x(), next.y()))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(next.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(next.y())
+                                    .append("f;\n");
+                        }
+                    } else {
+                        for (final SVGPathPoint next : l.points()) {
+                            sb.append(String.format("sr.line(currentX, currentY, %sf, %sf);", next.x(), next.y()))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(next.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(next.y())
+                                    .append("f;\n");
+                        }
                     }
                 }
                 case SVGPathBezier b -> {

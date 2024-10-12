@@ -32,8 +32,7 @@ import com.ledmington.svg2gdx.path.SVGPathBezier;
 import com.ledmington.svg2gdx.path.SVGPathBezierElement;
 import com.ledmington.svg2gdx.path.SVGPathClosepath;
 import com.ledmington.svg2gdx.path.SVGPathElement;
-import com.ledmington.svg2gdx.path.SVGPathLinetoAbsolute;
-import com.ledmington.svg2gdx.path.SVGPathLinetoRelative;
+import com.ledmington.svg2gdx.path.SVGPathLineto;
 import com.ledmington.svg2gdx.path.SVGPathMoveto;
 import com.ledmington.svg2gdx.path.SVGPathPoint;
 
@@ -185,7 +184,7 @@ public final class SVGParser {
                             final boolean isRelative = elem.equals("c");
                             i++;
                             final List<SVGPathBezierElement> elements = new ArrayList<>();
-                            for (; i + 2 < pathData.length; i += 3) {
+                            for (; i + 2 < pathData.length && pathData[i].contains(","); i += 3) {
                                 elements.add(new SVGPathBezierElement(
                                         parsePathPoint(pathData[i]),
                                         parsePathPoint(pathData[i + 1]),
@@ -195,10 +194,16 @@ public final class SVGParser {
                             yield new SVGPathBezier(isRelative, elements);
                         }
 
-                            // "lineto" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands)
-                        case "l" -> new SVGPathLinetoRelative();
-                        case "L" -> new SVGPathLinetoAbsolute();
+                            // Relative/Absolute "lineto" commands
+                        case "l", "L" -> {
+                            final boolean isRelative = elem.equals("l");
+                            i++;
+                            final List<SVGPathPoint> points = new ArrayList<>();
+                            for (; i < pathData.length && pathData[i].contains(","); i++) {
+                                points.add(parsePathPoint(pathData[i]));
+                            }
+                            yield new SVGPathLineto(isRelative, points);
+                        }
 
                             // "closepath" commands
                             // (https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand)
