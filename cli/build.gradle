@@ -31,7 +31,7 @@ application {
 }
 
 run {
-    args = []
+    args = ["--test", "../logo.svg"]
     jvmArgs = []
 }
 

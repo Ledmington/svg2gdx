@@ -17,9 +17,7 @@
  */
 package com.ledmington.svg2gdx.path;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
@@ -32,17 +30,12 @@ import com.ledmington.svg2gdx.SVGPalette;
  * An SVG path element. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathData">here</a>.
  */
-public final class SVGSubPath implements SVGElement {
+public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
 
     private static final int DEFAULT_CURVE_SEGMENTS = 50;
 
-    private final List<SVGPathElement> elements;
-
-    public SVGSubPath(final List<SVGPathElement> elements, final String colorName) {
-        this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
-    }
-
-    public void draw(final ShapeRenderer sr, final SVGPalette palette,final String colorName,final SVGPathPoint initial) {
+    public void draw(
+            final ShapeRenderer sr, final SVGPalette palette, final String colorName, final SVGPathPoint initial) {
         final SVGColor c = palette.getFromName(colorName);
         sr.setColor(
                 ParseUtils.byteToFloat(c.r()),
@@ -51,82 +44,72 @@ public final class SVGSubPath implements SVGElement {
                 ParseUtils.byteToFloat(c.a()));
 
         SVGPathPoint current = null;
-        int i = 0;
-        while (i < elements.size()) {
-            final SVGPathElement elem = elements.get(i);
-            switch (elem) {
+        for (final SVGPathElement e : elements) {
+            switch (e) {
                 case SVGPathMoveto m -> {
-                    i++;
                     if (m.isRelative()) {
-                        if (current == null) {
-                            current = new SVGPathPoint(0.0, 0.0);
-                        }
-                        for (final SVGPathPoint next : m.implicitLines()) {
+                        current = (current == null) ? new SVGPathPoint(0.0, 0.0).add(initial) : current.add(initial);
+                    } else {
+                        current = initial;
+                    }
+
+                    for (final SVGPathPoint next : m.implicitLines()) {
+                        if (m.isRelative()) {
                             sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
                                     (current.y() + next.y()));
-                            current = next;
-                        }
-                    } else {
-                        current = m.initialPoint();
-                        for (final SVGPathPoint next : m.implicitLines()) {
+                            current = current.add(next);
+                        } else {
                             sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
                             current = next;
                         }
                     }
                 }
                 case SVGPathLineto l -> {
-                    if (l.isRelative()) {
-                        for (final SVGPathPoint next : l.points()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
-                                    (current.y() + next.y()));
-                            current = next;
-                        }
-                    } else {
-                        for (final SVGPathPoint next : l.points()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
-                            current = next;
+                    for (final SVGPathPoint p : l.points()) {
+                        if (l.isRelative()) {
+                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + p.x()), (float)
+                                    (current.y() + p.y()));
+                            current = current.add(p);
+                        } else {
+                            sr.line((float) current.x(), (float) current.y(), (float) p.x(), (float) p.y());
+                            current = p;
                         }
                     }
                 }
                 case SVGPathBezier b -> {
-                    for (final SVGPathBezierElement bezElem : b.elements()) {
-                        final SVGPathPoint c1 = bezElem.startControlPoint();
-                        final SVGPathPoint c2 = bezElem.endControlPoint();
-                        final SVGPathPoint end = bezElem.centralPoint();
+                    for (final SVGPathBezierElement be : b.elements()) {
                         if (b.isRelative()) {
                             sr.curve(
                                     (float) current.x(),
                                     (float) current.y(),
-                                    (float) (current.x() + c1.x()),
-                                    (float) (current.y() + c1.y()),
-                                    (float) (current.x() + c2.x()),
-                                    (float) (current.y() + c2.y()),
-                                    (float) (current.x() + end.x()),
-                                    (float) (current.y() + end.y()),
+                                    (float) (current.x()
+                                            + be.firstControlPoint().x()),
+                                    (float) (current.y()
+                                            + be.firstControlPoint().y()),
+                                    (float) (current.x()
+                                            + be.secondControlPoint().x()),
+                                    (float) (current.y()
+                                            + be.secondControlPoint().y()),
+                                    (float) (current.x() + be.endPoint().x()),
+                                    (float) (current.y() + be.endPoint().y()),
                                     DEFAULT_CURVE_SEGMENTS);
+                            current = current.add(be.endPoint());
                         } else {
                             sr.curve(
                                     (float) current.x(),
                                     (float) current.y(),
-                                    (float) c1.x(),
-                                    (float) c1.y(),
-                                    (float) c2.x(),
-                                    (float) c2.y(),
-                                    (float) end.x(),
-                                    (float) end.y(),
+                                    (float) be.firstControlPoint().x(),
+                                    (float) be.firstControlPoint().y(),
+                                    (float) be.secondControlPoint().x(),
+                                    (float) be.secondControlPoint().y(),
+                                    (float) be.endPoint().x(),
+                                    (float) be.endPoint().y(),
                                     DEFAULT_CURVE_SEGMENTS);
+                            current = be.endPoint();
                         }
-                        current = end;
                     }
                 }
-                case SVGPathClosepath ignored -> {
-                    sr.line((float) current.x(), (float) current.y(), (float) initial.x(), (float) initial.y());
-                    initial = null;
-                    current = new SVGPathPoint(0.0, 0.0);
-                    i++;
-                }
-                default -> throw new IllegalArgumentException(
-                        String.format("Unknown SVG path element type '%s'", elem));
+                default -> throw new IllegalArgumentException(String.format("Unknown SVG path element type '%s'", e));
             }
         }
     }
@@ -134,7 +117,7 @@ public final class SVGSubPath implements SVGElement {
     @Override
     public String toGDXShapeRenderer() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(String.format("sr.setColor(%s);", colorName)).append('\n');
+        sb.append("sr.setColor(Color.BLACK);\n");
 
         SVGPathPoint initialPoint = null;
         int i = 0;

@@ -30,13 +30,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import com.ledmington.svg2gdx.path.SVGPath;
 import com.ledmington.svg2gdx.path.SVGPathBezier;
 import com.ledmington.svg2gdx.path.SVGPathBezierElement;
-import com.ledmington.svg2gdx.path.SVGPathClosepath;
 import com.ledmington.svg2gdx.path.SVGPathElement;
 import com.ledmington.svg2gdx.path.SVGPathLineto;
 import com.ledmington.svg2gdx.path.SVGPathMoveto;
 import com.ledmington.svg2gdx.path.SVGPathPoint;
-
 import com.ledmington.svg2gdx.path.SVGSubPath;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -148,13 +147,31 @@ public final class SVGParser {
                 Double.parseDouble(pointData.substring(0, idx)), Double.parseDouble(pointData.substring(idx + 1)));
     }
 
-    private static SVGPath parsePath(final String pathString,final String colorName) {
+    private static SVGPath parsePath(final String pathString, final String colorName) {
         final List<SVGSubPath> subpaths = new ArrayList<>();
-final String[] splitted = pathString.split("[zZ] +[mM]");
-for(final String subpath : splitted){
-    subpaths.add(parseSubPath(subpath));
-}
-        return new SVGPath(colorName,subpaths);
+        final List<String> splitted = new ArrayList<>();
+        {
+            for (int i = 0; i < pathString.length(); i++) {
+                final StringBuilder sb = new StringBuilder();
+                for (; i < pathString.length(); i++) {
+                    final char x = pathString.charAt(i);
+                    sb.append(x);
+                    if (x == 'z' || x == 'Z') {
+                        break;
+                    }
+                }
+                splitted.add(sb.toString());
+
+                // skip whitespaces
+                while (i + 1 < pathString.length() && pathString.charAt(i + 1) == ' ') {
+                    i++;
+                }
+            }
+        }
+        for (final String subpath : splitted) {
+            subpaths.add(parseSubPath(subpath));
+        }
+        return new SVGPath(colorName, subpaths);
     }
 
     private static SVGSubPath parseSubPath(final String pathString) {
@@ -168,68 +185,54 @@ for(final String subpath : splitted){
 
         for (int i = 0; i < pathData.length; i++) {
             final String elem = pathData[i];
-            final SVGPathElement x =
-                    switch (elem) {
-                            // Relative/Absolute "moveto" command
-                        case "m", "M" -> {
-                            final boolean isRelative = elem.equals("m");
+            if (elem.equals("m") || elem.equals("M")) {
+                // Relative/Absolute "moveto" command
+                final boolean isRelative = elem.equals("m");
 
-                            i++;
-                            final SVGPathPoint initialPoint = parsePathPoint(pathData[i]);
+                i++;
+                final SVGPathPoint initialPoint = parsePathPoint(pathData[i]);
 
-                            final List<SVGPathPoint> implicitLines = new ArrayList<>();
-                            if (i + 1 < pathData.length && pathData[i + 1].contains(",")) {
-                                i++;
-                                for (; i < pathData.length && pathData[i].contains(","); i++) {
-                                    implicitLines.add(parsePathPoint(pathData[i]));
-                                }
-                            }
+                final List<SVGPathPoint> implicitLines = new ArrayList<>();
+                if (i + 1 < pathData.length && pathData[i + 1].indexOf(',') != -1) {
+                    i++;
+                    for (; i < pathData.length && pathData[i + 1].indexOf(',') != -1; i++) {
+                        implicitLines.add(parsePathPoint(pathData[i]));
+                    }
+                }
 
-                            yield new SVGPathMoveto(isRelative, initialPoint, implicitLines);
-                        }
+                subPathElements.add(new SVGPathMoveto(isRelative, initialPoint, implicitLines));
+            } else if (elem.equals("c") || elem.equals("C")) {
+                // Relative/Absolute "Bezier" command
+                final boolean isRelative = elem.equals("c");
+                i++;
+                final List<SVGPathBezierElement> elements = new ArrayList<>();
+                for (; i + 2 < pathData.length && pathData[i].indexOf(',') != -1; i += 3) {
+                    elements.add(new SVGPathBezierElement(
+                            parsePathPoint(pathData[i]),
+                            parsePathPoint(pathData[i + 1]),
+                            parsePathPoint(pathData[i + 2])));
+                }
+                i--;
+                subPathElements.add(new SVGPathBezier(isRelative, elements));
+            } else if (elem.equals("l") || elem.equals("L")) {
+                // Relative/Absolute "lineto" command
+                final boolean isRelative = elem.equals("l");
 
-                            // Relative/Absolute "Bezier" command
-                        case "c", "C" -> {
-                            final boolean isRelative = elem.equals("c");
-                            i++;
-                            final List<SVGPathBezierElement> elements = new ArrayList<>();
-                            for (; i + 2 < pathData.length && pathData[i].contains(","); i += 3) {
-                                elements.add(new SVGPathBezierElement(
-                                        parsePathPoint(pathData[i]),
-                                        parsePathPoint(pathData[i + 1]),
-                                        parsePathPoint(pathData[i + 2])));
-                            }
+                i++;
 
-                            yield new SVGPathBezier(isRelative, elements);
-                        }
+                final List<SVGPathPoint> points = new ArrayList<>();
+                for (; i < pathData.length && pathData[i + 1].indexOf(',') != -1; i++) {
+                    points.add(parsePathPoint(pathData[i]));
+                }
 
-                            // Relative/Absolute "lineto" commands
-                        case "l", "L" -> {
-                            final boolean isRelative = elem.equals("l");
-                            i++;
-                            final List<SVGPathPoint> points = new ArrayList<>();
-                            for (; i < pathData.length && pathData[i].contains(","); i++) {
-                                points.add(parsePathPoint(pathData[i]));
-                            }
-                            yield new SVGPathLineto(isRelative, points);
-                        }
-
-                            // "closepath" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand)
-                        case "z", "Z" -> new SVGPathClosepath();
-
-                        default -> throw new IllegalArgumentException(String.format("Unknown subpath element '%s'", elem));
-                    };
-
-            subPathElements.add(x);
-
-            if(x instanceof SVGPathClosepath){
+                subPathElements.add(new SVGPathLineto(isRelative, points));
+            } else if (elem.equals("z") || elem.equals("Z")) {
+                // "closepath" commands
+                // reference: https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand
                 break;
+            } else {
+                throw new IllegalArgumentException(String.format("Unknown subpath element '%s'", elem));
             }
-        }
-
-        if(!(subPathElements.getLast() instanceof SVGPathClosepath)){
-            throw new IllegalArgumentException(String.format("Wrong subpath format: expected to end with 'z' or 'Z' but ended with '%s'",subPathElements.getLast()));
         }
 
         return new SVGSubPath(subPathElements);

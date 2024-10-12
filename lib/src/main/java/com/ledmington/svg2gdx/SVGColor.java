@@ -45,4 +45,9 @@ public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
                 b,
                 a);
     }
+
+    @Override
+    public String toString() {
+        return String.format("SVGColor[r=0x%02x, g=0x%02x, b=0x%02x, a=0x%02x]", r, g, b, a);
+    }
 }

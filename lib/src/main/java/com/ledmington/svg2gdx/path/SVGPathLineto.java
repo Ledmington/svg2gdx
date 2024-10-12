@@ -17,8 +17,10 @@
  */
 package com.ledmington.svg2gdx.path;
 
+import java.util.List;
+
 /**
  * An SVG "lineto" command. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
  */
-public record SVGPathLineto(boolean isRelative, java.util.List<SVGPathPoint> points) implements SVGPathElement {}
+public record SVGPathLineto(boolean isRelative, List<SVGPathPoint> points) implements SVGPathElement {}

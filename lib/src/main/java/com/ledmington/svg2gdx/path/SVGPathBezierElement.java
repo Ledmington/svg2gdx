@@ -18,4 +18,4 @@
 package com.ledmington.svg2gdx.path;
 
 public record SVGPathBezierElement(
-        SVGPathPoint startControlPoint, SVGPathPoint endControlPoint, SVGPathPoint centralPoint) {}
+        SVGPathPoint firstControlPoint, SVGPathPoint secondControlPoint, SVGPathPoint endPoint) {}
