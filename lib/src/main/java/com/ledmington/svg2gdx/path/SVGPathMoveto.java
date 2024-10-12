@@ -19,5 +19,14 @@ package com.ledmington.svg2gdx.path;
 
 import java.util.List;
 
+/**
+ * The SVG path element relative to 'moveto' commands. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands">here</a>.
+ *
+ * @param isRelative True if this is a relative 'moveto' command ("m"), false if it is an absolute 'moveto' command
+ *     ("M").
+ * @param initialPoint The first point of this command.
+ * @param implicitLines All the points after the first one which all represent implicit 'lineto' commands. May be empty.
+ */
 public record SVGPathMoveto(boolean isRelative, SVGPathPoint initialPoint, List<SVGPathPoint> implicitLines)
         implements SVGPathElement {}

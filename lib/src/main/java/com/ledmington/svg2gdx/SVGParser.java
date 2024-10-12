@@ -20,10 +20,9 @@ package com.ledmington.svg2gdx;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -96,6 +95,21 @@ public final class SVGParser {
         return new SVGImage(imageWidth, imageHeight, palette.build(), elements);
     }
 
+    private static Map<String, String> parseStyle(final String style) {
+        final Map<String, String> m = new HashMap<>();
+        final String[] styles = style.split(";");
+        for (final String s : styles) {
+            final int idx = s.indexOf(':');
+            final String key = s.substring(0, idx);
+            switch (key) {
+                case "fill", "fill-opacity", "stroke", "display" -> {}
+                default -> throw new IllegalArgumentException(String.format("Unknown style element '%s'", key));
+            }
+            m.put(key, s.substring(idx + 1));
+        }
+        return m;
+    }
+
     private static SVGRectangle convertRect(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
         final NamedNodeMap m = node.getAttributes();
 
@@ -105,8 +119,7 @@ public final class SVGParser {
         final double rectY = Double.parseDouble(m.getNamedItem("y").getNodeValue());
 
         final String style = m.getNamedItem("style").getNodeValue();
-        final Map<String, String> styleValues =
-                Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
+        final Map<String, String> styleValues = parseStyle(style);
 
         final SVGColor color = parseColor(styleValues, palette);
         final boolean filled = styleValues.containsKey("fill");
@@ -118,8 +131,7 @@ public final class SVGParser {
         final NamedNodeMap m = node.getAttributes();
 
         final String style = m.getNamedItem("style").getNodeValue();
-        final Map<String, String> styleValues =
-                Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
+        final Map<String, String> styleValues = parseStyle(style);
 
         final SVGColor color = parseColor(styleValues, palette);
         final String colorName = palette.getName(color);
@@ -129,6 +141,12 @@ public final class SVGParser {
         }
 
         return new SVGPath(parsePath(m.getNamedItem("d").getNodeValue()), colorName);
+    }
+
+    private static SVGPathPoint parsePathPoint(final String pointData) {
+        final int idx = pointData.indexOf(',');
+        return new SVGPathPoint(
+                Double.parseDouble(pointData.substring(0, idx)), Double.parseDouble(pointData.substring(idx + 1)));
     }
 
     private static List<SVGPathElement> parsePath(final String pathString) {
@@ -146,28 +164,17 @@ public final class SVGParser {
                     switch (elem) {
 
                             // Relative/Absolute "moveto" command
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands)
                         case "m", "M" -> {
                             final boolean isRelative = elem.equals("m");
 
                             i++;
-                            final SVGPathPoint initialPoint;
-                            {
-                                final int idx = pathData[i].indexOf(',');
-                                initialPoint = new SVGPathPoint(
-                                        Double.parseDouble(pathData[i].substring(0, idx)),
-                                        Double.parseDouble(pathData[i].substring(idx + 1)));
-                            }
+                            final SVGPathPoint initialPoint = parsePathPoint(pathData[i]);
 
                             final List<SVGPathPoint> implicitLines = new ArrayList<>();
                             if (i + 1 < pathData.length && pathData[i + 1].contains(",")) {
                                 i++;
                                 for (; i < pathData.length && pathData[i].contains(","); i++) {
-                                    final int idx = pathData[i].indexOf(',');
-                                    final SVGPathPoint p = new SVGPathPoint(
-                                            Double.parseDouble(pathData[i].substring(0, idx)),
-                                            Double.parseDouble(pathData[i].substring(idx + 1)));
-                                    implicitLines.add(p);
+                                    implicitLines.add(parsePathPoint(pathData[i]));
                                 }
                             }
 
@@ -190,6 +197,7 @@ public final class SVGParser {
 
                         default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", elem));
                     };
+
             elements.add(x);
         }
 

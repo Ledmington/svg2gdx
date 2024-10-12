@@ -17,4 +17,8 @@
  */
 package com.ledmington.svg2gdx.path;
 
-public record SVGPathPoint(double x, double y) implements SVGPathElement {}
+public record SVGPathPoint(double x, double y) implements SVGPathElement {
+    public SVGPathPoint add(final SVGPathPoint p) {
+        return new SVGPathPoint(this.x + p.x, this.y + p.y);
+    }
+}

@@ -58,29 +58,25 @@ public final class SVGPath implements SVGElement {
         while (i < elements.size()) {
             final SVGPathElement elem = elements.get(i);
             switch (elem) {
-                case SVGPathMovetoAbsolute ignored -> {
+                case SVGPathMoveto m -> {
                     i++;
-                    current = (SVGPathPoint) elements.get(i++);
-                    if (initial == null) {
-                        initial = current;
-                    }
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
-                        current = next;
-                    }
-                }
-                case SVGPathMovetoRelative ignored -> {
-                    i++;
-                    current = (SVGPathPoint) elements.get(i++);
-                    if (initial == null) {
-                        initial = current;
-                    }
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
-                                (current.y() + next.y()));
-                        current = next;
+                    if (m.isRelative()) {
+                        if (current == null) {
+                            current = new SVGPathPoint(0.0, 0.0);
+                        }
+                        initial = current.add(m.initialPoint());
+                        for (final SVGPathPoint next : m.implicitLines()) {
+                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
+                                    (current.y() + next.y()));
+                            current = next;
+                        }
+                    } else {
+                        current = m.initialPoint();
+                        initial = m.initialPoint();
+                        for (final SVGPathPoint next : m.implicitLines()) {
+                            sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
+                            current = next;
+                        }
                     }
                 }
                 case SVGPathLinetoAbsolute ignored -> {
@@ -164,76 +160,63 @@ public final class SVGPath implements SVGElement {
         while (i < elements.size()) {
             final SVGPathElement elem = elements.get(i);
             switch (elem) {
-                case SVGPathMovetoAbsolute ignored -> {
+                case SVGPathMoveto m -> {
                     i++;
                     final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
-                    sb.append("currentX=")
+                    sb.append("currentX = ")
                             .append(current.x())
-                            .append("f;\ncurrentY=")
+                            .append("f;\ncurrentY = ")
                             .append(current.y())
                             .append("f;\n");
                     if (initialPoint == null) {
                         initialPoint = current;
-                        sb.append("initialX=")
+                        sb.append("initialX = ")
                                 .append(current.x())
-                                .append("f;\ninitialY=")
+                                .append("f;\ninitialY = ")
                                 .append(current.y())
                                 .append("f;\n");
                     }
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format("sr.line(currentX,currentY,%sf,%sf);", next.x(), next.y()))
-                                .append('\n')
-                                .append("currentX=")
-                                .append(next.x())
-                                .append("f;\ncurrentY=")
-                                .append(next.y())
-                                .append("f;\n");
-                    }
-                }
-                case SVGPathMovetoRelative ignored -> {
-                    i++;
-                    final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
-                    sb.append("currentX=")
-                            .append(current.x())
-                            .append("f;\ncurrentY=")
-                            .append(current.y())
-                            .append("f;\n");
-                    if (initialPoint == null) {
-                        initialPoint = current;
-                        sb.append("initialX=")
-                                .append(current.x())
-                                .append("f;\ninitialY=")
-                                .append(current.y())
-                                .append("f;\n");
-                    }
-                    while (elements.get(i) instanceof SVGPathPoint) {
-                        final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format(
-                                        "sr.line(currentX,currentY,currentX+%sf,currentY+%sf);", next.x(), next.y()))
-                                .append('\n')
-                                .append("currentX=")
-                                .append(next.x())
-                                .append("f;\ncurrentY=")
-                                .append(next.y())
-                                .append("f;\n");
+                    if (m.isRelative()) {
+                        while (elements.get(i) instanceof SVGPathPoint) {
+                            final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                            sb.append(String.format(
+                                            "sr.line(currentX, currentY, currentX + %sf, currentY + %sf);",
+                                            next.x(), next.y()))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(next.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(next.y())
+                                    .append("f;\n");
+                        }
+                    } else {
+                        while (elements.get(i) instanceof SVGPathPoint) {
+                            final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
+                            sb.append(String.format("sr.line(currentX, currentY, %sf, %sf);", next.x(), next.y()))
+                                    .append('\n')
+                                    .append("currentX = ")
+                                    .append(next.x())
+                                    .append("f;\ncurrentY = ")
+                                    .append(next.y())
+                                    .append("f;\n");
+                        }
                     }
                 }
                 case SVGPathLinetoAbsolute ignored -> {
                     i++;
                     final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
-                    sb.append("currentX=")
+                    sb.append("currentX = ")
                             .append(current.x())
-                            .append("f;\ncurrentY=")
+                            .append("f;\ncurrentY = ")
                             .append(current.y())
                             .append("f;\n");
                     while (elements.get(i) instanceof SVGPathPoint) {
                         final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
-                        sb.append(String.format("sr.line(currentX,currentY,%sf,%sf);", next.x(), next.y()))
+                        sb.append(String.format("sr.line(currentX, currentY, %sf, %sf);", next.x(), next.y()))
                                 .append('\n')
-                                .append("currentX=")
+                                .append("currentX = ")
                                 .append(next.x())
-                                .append("f;\ncurrentY=")
+                                .append("f;\ncurrentY = ")
                                 .append(next.y())
                                 .append("f;\n");
                     }
@@ -241,19 +224,20 @@ public final class SVGPath implements SVGElement {
                 case SVGPathLinetoRelative ignored -> {
                     i++;
                     final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
-                    sb.append("currentX=")
+                    sb.append("currentX = ")
                             .append(current.x())
-                            .append("f;\ncurrentY=")
+                            .append("f;\ncurrentY = ")
                             .append(current.y())
                             .append("f;\n");
                     while (elements.get(i) instanceof SVGPathPoint) {
                         final SVGPathPoint next = (SVGPathPoint) elements.get(i++);
                         sb.append(String.format(
-                                        "sr.line(currentX,currentY,currentX+%sf,currentY+%sf);", next.x(), next.y()))
+                                        "sr.line(currentX, currentY, currentX + %sf, currentY + %sf);",
+                                        next.x(), next.y()))
                                 .append('\n')
-                                .append("currentX=")
+                                .append("currentX = ")
                                 .append(next.x())
-                                .append("f;\ncurrentY=")
+                                .append("f;\ncurrentY = ")
                                 .append(next.y())
                                 .append("f;\n");
                     }
@@ -265,12 +249,12 @@ public final class SVGPath implements SVGElement {
                         SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
                         SVGPathPoint end = (SVGPathPoint) elements.get(i++);
                         sb.append(String.format(
-                                        "sr.curve(currentX,currentY,%sf,%sf,%sf,%sf,%sf,%sf,50);",
-                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y()))
+                                        "sr.curve(currentX, currentY, %sf, %sf, %sf, %sf, %sf, %sf, %d);",
+                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
                                 .append('\n')
-                                .append("currentX=")
+                                .append("currentX = ")
                                 .append(end.x())
-                                .append("f;\ncurrentY=")
+                                .append("f;\ncurrentY = ")
                                 .append(end.y())
                                 .append("f;\n");
                     }
@@ -282,21 +266,21 @@ public final class SVGPath implements SVGElement {
                         SVGPathPoint c2 = (SVGPathPoint) elements.get(i++);
                         SVGPathPoint end = (SVGPathPoint) elements.get(i++);
                         sb.append(String.format(
-                                        "sr.curve(currentX,currentY,currentX+%sf,currentY+%sf,currentX+%sf,currentY+%sf,currentX+%sf,currentY+%sf,50);",
-                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y()))
+                                        "sr.curve(currentX, currentY, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, currentX + %sf, currentY + %sf, %d);",
+                                        c1.x(), c1.y(), c2.x(), c2.y(), end.x(), end.y(), DEFAULT_CURVE_SEGMENTS))
                                 .append('\n')
-                                .append("currentX=")
+                                .append("currentX = ")
                                 .append(end.x())
-                                .append("f;\ncurrentY=")
+                                .append("f;\ncurrentY = ")
                                 .append(end.y())
                                 .append("f;\n");
                     }
                 }
                 case SVGPathClosepath ignored -> {
-                    sb.append("sr.line(currentX,currentY,initialX,initialY);\n");
-                    sb.append("initialX=0.0f;\ninitialY=0.0f;\n");
+                    sb.append("sr.line(currentX, currentY, initialX, initialY);\n");
+                    sb.append("initialX = 0.0f;\ninitialY = 0.0f;\n");
                     initialPoint = null;
-                    sb.append("currentX=0.0f;\ncurrentY=0.0f;\n");
+                    sb.append("currentX = 0.0f;\ncurrentY = 0.0f;\n");
                     i++;
                 }
                 default -> throw new IllegalArgumentException(
