@@ -17,63 +17,40 @@
  */
 package com.ledmington.svg2gdx.path;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.ledmington.svg2gdx.ParseUtils;
 import com.ledmington.svg2gdx.SVGColor;
 import com.ledmington.svg2gdx.SVGElement;
 import com.ledmington.svg2gdx.SVGPalette;
 
+/**
+ * An SVG path element. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathData">here</a>.
+ */
 public final class SVGPath implements SVGElement {
 
     private static final int DEFAULT_CURVE_SEGMENTS = 50;
+
     private final List<SVGPathElement> elements;
     private final String colorName;
 
-    public SVGPath(final String pathString, final String colorName) {
-        this.elements = new ArrayList<>();
+    public SVGPath(final List<SVGPathElement> elements, final String colorName) {
+        this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
         this.colorName = Objects.requireNonNull(colorName);
-
-        final String[] pathData = pathString.split(" ");
-        for (final String pathDatum : pathData) {
-            elements.add(
-                    switch (pathDatum) {
-                            // "moveto" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands)
-                        case "m" -> new SVGPathMovetoRelative();
-                        case "M" -> new SVGPathMovetoAbsolute();
-
-                            // "Bezier" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands)
-                        case "c" -> new SVGPathBezierRelative();
-                        case "C" -> new SVGPathBezierAbsolute();
-
-                            // "lineto" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands)
-                        case "l" -> new SVGPathLinetoRelative();
-                        case "L" -> new SVGPathLinetoAbsolute();
-
-                            // "closepath" commands
-                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand)
-                        case "z", "Z" -> new SVGPathClosepath();
-                        default -> {
-                            if (pathDatum.contains(",")) {
-                                final String[] data = pathDatum.split(",");
-                                yield new SVGPathPoint(Double.parseDouble(data[0]), Double.parseDouble(data[1]));
-                            }
-                            throw new IllegalArgumentException("Unexpected value: " + pathDatum);
-                        }
-                    });
-        }
     }
 
     public void draw(final ShapeRenderer sr, final SVGPalette palette) {
         final SVGColor c = palette.getFromName(colorName);
         sr.setColor(
-                ((float) c.r()) / 255.0f, ((float) c.g()) / 255.0f, ((float) c.b()) / 255.0f, ((float) c.a()) / 255.0f);
+                ParseUtils.byteToFloat(c.r()),
+                ParseUtils.byteToFloat(c.g()),
+                ParseUtils.byteToFloat(c.b()),
+                ParseUtils.byteToFloat(c.a()));
 
         SVGPathPoint current = null;
         SVGPathPoint initial = null;

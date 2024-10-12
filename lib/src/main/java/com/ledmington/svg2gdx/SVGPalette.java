@@ -56,7 +56,7 @@ public final class SVGPalette implements SVGElement {
         }
     }
 
-    public static SVGPaletteBuilder builder() {
+    static SVGPaletteBuilder builder() {
         return new SVGPaletteBuilder();
     }
 

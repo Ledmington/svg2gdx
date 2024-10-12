@@ -29,6 +29,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.ledmington.svg2gdx.path.SVGPath;
+import com.ledmington.svg2gdx.path.SVGPathBezierAbsolute;
+import com.ledmington.svg2gdx.path.SVGPathBezierRelative;
+import com.ledmington.svg2gdx.path.SVGPathClosepath;
+import com.ledmington.svg2gdx.path.SVGPathElement;
+import com.ledmington.svg2gdx.path.SVGPathLinetoAbsolute;
+import com.ledmington.svg2gdx.path.SVGPathLinetoRelative;
+import com.ledmington.svg2gdx.path.SVGPathMoveto;
+import com.ledmington.svg2gdx.path.SVGPathPoint;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -109,10 +117,6 @@ public final class SVGParser {
     private static SVGPath convertPath(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
         final NamedNodeMap m = node.getAttributes();
 
-        if (m.getNamedItem("d") == null) {
-            throw new IllegalArgumentException("Expected a 'd' attribute for 'path' element");
-        }
-
         final String style = m.getNamedItem("style").getNodeValue();
         final Map<String, String> styleValues =
                 Arrays.stream(style.split(";")).collect(Collectors.toMap(s -> s.split(":")[0], s -> s.split(":")[1]));
@@ -120,7 +124,76 @@ public final class SVGParser {
         final SVGColor color = parseColor(styleValues, palette);
         final String colorName = palette.getName(color);
 
-        return new SVGPath(m.getNamedItem("d").getNodeValue(), colorName);
+        if (m.getNamedItem("d") == null) {
+            throw new IllegalArgumentException("Expected a 'd' attribute for 'path' element");
+        }
+
+        return new SVGPath(parsePath(m.getNamedItem("d").getNodeValue()), colorName);
+    }
+
+    private static List<SVGPathElement> parsePath(final String pathString) {
+        final List<SVGPathElement> elements = new ArrayList<>();
+        final String[] pathData = pathString.split(" ");
+
+        if (!pathData[0].equals("m") && !pathData[0].equals("M")) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid path data: must start with 'm' or 'M' but was '%s'", pathData[0]));
+        }
+
+        for (int i = 0; i < pathData.length; i++) {
+            final String elem = pathData[i];
+            final SVGPathElement x =
+                    switch (elem) {
+
+                            // Relative/Absolute "moveto" command
+                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands)
+                        case "m", "M" -> {
+                            final boolean isRelative = elem.equals("m");
+
+                            i++;
+                            final SVGPathPoint initialPoint;
+                            {
+                                final int idx = pathData[i].indexOf(',');
+                                initialPoint = new SVGPathPoint(
+                                        Double.parseDouble(pathData[i].substring(0, idx)),
+                                        Double.parseDouble(pathData[i].substring(idx + 1)));
+                            }
+
+                            final List<SVGPathPoint> implicitLines = new ArrayList<>();
+                            if (i + 1 < pathData.length && pathData[i + 1].contains(",")) {
+                                i++;
+                                for (; i < pathData.length && pathData[i].contains(","); i++) {
+                                    final int idx = pathData[i].indexOf(',');
+                                    final SVGPathPoint p = new SVGPathPoint(
+                                            Double.parseDouble(pathData[i].substring(0, idx)),
+                                            Double.parseDouble(pathData[i].substring(idx + 1)));
+                                    implicitLines.add(p);
+                                }
+                            }
+
+                            yield new SVGPathMoveto(isRelative, initialPoint, implicitLines);
+                        }
+
+                            // "Bezier" commands
+                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands)
+                        case "c" -> new SVGPathBezierRelative();
+                        case "C" -> new SVGPathBezierAbsolute();
+
+                            // "lineto" commands
+                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands)
+                        case "l" -> new SVGPathLinetoRelative();
+                        case "L" -> new SVGPathLinetoAbsolute();
+
+                            // "closepath" commands
+                            // (https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand)
+                        case "z", "Z" -> new SVGPathClosepath();
+
+                        default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", elem));
+                    };
+            elements.add(x);
+        }
+
+        return elements;
     }
 
     private static SVGColor parseColor(
@@ -133,6 +206,7 @@ public final class SVGParser {
         final byte r = ParseUtils.parseByteHex(hexColor.substring(1, 3));
         final byte g = ParseUtils.parseByteHex(hexColor.substring(3, 5));
         final byte b = ParseUtils.parseByteHex(hexColor.substring(5, 7));
+
         byte a = (byte) 0xff;
         if (styleValues.containsKey("fill-opacity")) {
             final double opacity = Double.parseDouble(styleValues.get("fill-opacity"));
@@ -142,6 +216,7 @@ public final class SVGParser {
             }
             a = ParseUtils.asByte((int) (opacity * 255.0));
         }
+
         final SVGColor color = new SVGColor(r, g, b, a);
         palette.add(color);
         return color;

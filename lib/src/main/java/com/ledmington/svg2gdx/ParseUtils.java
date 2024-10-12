@@ -20,7 +20,7 @@ package com.ledmington.svg2gdx;
 import java.util.Objects;
 
 /** Collection of utility methods for parsing. */
-final class ParseUtils {
+public final class ParseUtils {
 
     private ParseUtils() {}
 

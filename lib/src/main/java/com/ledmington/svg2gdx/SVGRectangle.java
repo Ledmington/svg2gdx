@@ -59,7 +59,10 @@ record SVGRectangle(double x, double y, double width, double height, boolean fil
         sr.set(filled ? ShapeRenderer.ShapeType.Filled : ShapeRenderer.ShapeType.Line);
         final SVGColor c = palette.getFromName(colorName);
         sr.setColor(
-                ((float) c.r()) / 255.0f, ((float) c.g()) / 255.0f, ((float) c.b()) / 255.0f, ((float) c.a()) / 255.0f);
+                ParseUtils.byteToFloat(c.r()),
+                ParseUtils.byteToFloat(c.g()),
+                ParseUtils.byteToFloat(c.b()),
+                ParseUtils.byteToFloat(c.a()));
         sr.rect((float) x, (float) y, (float) width, (float) height);
     }
 
@@ -67,6 +70,6 @@ record SVGRectangle(double x, double y, double width, double height, boolean fil
     public String toGDXShapeRenderer() {
         return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
                 + String.format("sr.setColor(%s);", colorName) + '\n'
-                + String.format("sr.rect(%sf,%sf,%sf,%sf);", x, y, width, height) + '\n';
+                + String.format("sr.rect(%sf, %sf, %sf, %sf);", x, y, width, height) + '\n';
     }
 }

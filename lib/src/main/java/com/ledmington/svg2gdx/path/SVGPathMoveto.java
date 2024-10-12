@@ -17,4 +17,7 @@
  */
 package com.ledmington.svg2gdx.path;
 
-public record SVGPathMovetoRelative() implements SVGPathElement {}
+import java.util.List;
+
+public record SVGPathMoveto(boolean isRelative, SVGPathPoint initialPoint, List<SVGPathPoint> implicitLines)
+        implements SVGPathElement {}
