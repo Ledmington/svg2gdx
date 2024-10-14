@@ -13,8 +13,8 @@ dependencies {
 }
 
 pitest {
-	targetClasses.set(['com.ledmington.svg2gdx.*'])
-	targetTests.set(['com.ledmington.svg2gdx.*'])
+	targetClasses.set(['com.ledmington.svg.*'])
+	targetTests.set(['com.ledmington.svg.*'])
 	pitestVersion = '1.17.0'
 	junit5PluginVersion = '1.2.1'
 	threads = 4
@@ -25,7 +25,7 @@ pitest {
 }
 
 jmh {
-	includes = ['com.ledmington.svg2gdx.bench.*'] // include pattern (regular expression) for benchmarks to be executed
+	includes = ['com.ledmington.svg.bench.*'] // include pattern (regular expression) for benchmarks to be executed
 	//excludes = ['some regular expression'] // exclude pattern (regular expression) for benchmarks to be executed
 	iterations = 10 // Number of measurement iterations to do.
 	//benchmarkMode = ['thrpt','ss'] // Benchmark mode. Available modes are: [Throughput/thrpt, AverageTime/avgt, SampleTime/sample, SingleShotTime/ss, All/all]

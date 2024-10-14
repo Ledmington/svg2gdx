@@ -15,6 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx;
+package com.ledmington.svg;
 
-public record SVGViewBox(double x, double y, double width, double height) {}
+/** An element of an SVG image. */
+public interface SVGElement {
+
+    /**
+     * Serializes this SVGElement into libGDX ShapeRenderer code.
+     *
+     * @return A possibly multi-line String containing valid java libGDX ShapeRenderer code.
+     */
+    String toGDXShapeRenderer();
+}

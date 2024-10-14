@@ -15,39 +15,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx.path;
+package com.ledmington.svg.path;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * An SVG "lineto" command. Official documentation available <a
- * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
+ * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
  */
-public final class SVGPathLineto implements SVGPathElement {
+public final class SVGPathBezier implements SVGPathElement {
 
     private final boolean isRelative;
-    private final List<SVGPathPoint> points;
+    private final List<SVGPathBezierElement> elements;
 
-    public SVGPathLineto(final boolean isRelative, final List<SVGPathPoint> points) {
+    public SVGPathBezier(final boolean isRelative, final List<SVGPathBezierElement> elements) {
         this.isRelative = isRelative;
-        Objects.requireNonNull(points);
-        if (points.isEmpty()) {
-            throw new IllegalArgumentException("Empty list of points");
+        Objects.requireNonNull(elements);
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of bezier elements");
         }
-        this.points = Collections.unmodifiableList(points);
+        this.elements = Collections.unmodifiableList(elements);
     }
 
     public boolean isRelative() {
         return isRelative;
     }
 
-    public int getNumPoints() {
-        return points.size();
+    public int getNumElements() {
+        return elements.size();
     }
 
-    public SVGPathPoint getPoint(final int idx) {
-        return points.get(idx);
+    public SVGPathBezierElement getElement(final int idx) {
+        return elements.get(idx);
     }
 }

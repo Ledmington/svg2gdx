@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx.bench;
+package com.ledmington.svg.bench;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import com.ledmington.svg2gdx.SVGParser;
+import com.ledmington.svg.SVGParser;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;

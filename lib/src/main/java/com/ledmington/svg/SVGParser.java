@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx;
+package com.ledmington.svg;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,12 +27,12 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.ledmington.svg2gdx.path.SVGPath;
-import com.ledmington.svg2gdx.path.SVGPathElement;
-import com.ledmington.svg2gdx.path.SVGPathMoveTo;
-import com.ledmington.svg2gdx.path.SVGPathPoint;
-import com.ledmington.svg2gdx.path.SVGSubPath;
-import com.ledmington.svg2gdx.util.CharacterIterator;
+import com.ledmington.svg.path.SVGPath;
+import com.ledmington.svg.path.SVGPathElement;
+import com.ledmington.svg.path.SVGPathMoveTo;
+import com.ledmington.svg.path.SVGPathPoint;
+import com.ledmington.svg.path.SVGSubPath;
+import com.ledmington.svg.util.CharacterIterator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

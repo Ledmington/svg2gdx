@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx.path;
+package com.ledmington.svg.path;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,8 +23,8 @@ import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import com.ledmington.svg2gdx.SVGElement;
-import com.ledmington.svg2gdx.SVGPalette;
+import com.ledmington.svg.SVGElement;
+import com.ledmington.svg.SVGPalette;
 
 public final class SVGPath implements SVGElement {
 

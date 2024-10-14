@@ -23,6 +23,10 @@ import java.util.function.Consumer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.ledmington.svg.ParseUtils;
+import com.ledmington.svg.SVGImage;
+import com.ledmington.svg.SVGParser;
+
 import org.openjdk.jol.info.GraphLayout;
 
 public class Main {

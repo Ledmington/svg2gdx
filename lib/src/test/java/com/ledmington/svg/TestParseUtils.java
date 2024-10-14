@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx;
+package com.ledmington.svg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
