@@ -17,4 +17,4 @@
  */
 package com.ledmington.svg.path;
 
-public record BezierElement(Point firstControlPoint, Point secondControlPoint, Point endPoint) {}
+public record CubicBezierElement(Point firstControlPoint, Point secondControlPoint, Point endPoint) {}

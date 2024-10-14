@@ -25,15 +25,19 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.ledmington.svg.path.Bezier;
-import com.ledmington.svg.path.BezierElement;
+import com.ledmington.svg.path.CubicBezier;
+import com.ledmington.svg.path.CubicBezierElement;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
 import com.ledmington.svg.path.PathElement;
 import com.ledmington.svg.path.Point;
-import com.ledmington.svg.path.SmoothBezier;
-import com.ledmington.svg.path.SmoothBezierElement;
+import com.ledmington.svg.path.QuadraticBezier;
+import com.ledmington.svg.path.QuadraticBezierElement;
+import com.ledmington.svg.path.SmoothCubicBezier;
+import com.ledmington.svg.path.SmoothCubicBezierElement;
+import com.ledmington.svg.path.SmoothQuadraticBezier;
+import com.ledmington.svg.path.SmoothQuadraticBezierElement;
 import com.ledmington.svg.path.SubPath;
 import com.ledmington.util.CharacterIterator;
 import com.ledmington.util.ParseUtils;
@@ -109,7 +113,8 @@ public final class Parser {
                 case "xmlns", "version" -> {
                     // intentionally ignored
                 }
-                default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", x.getNodeName()));
+                default -> throw new IllegalArgumentException(
+                        String.format("Unknown attribute '%s'", x.getNodeName()));
             }
         }
 
@@ -144,6 +149,7 @@ public final class Parser {
                 case "text": // ignored for now
                 case "title":
                 case "desc":
+                case "#comment":
                     // we don't care about these
                     break;
                 default:
@@ -363,7 +369,15 @@ public final class Parser {
                 }
                 case 's', 'S' -> {
                     it.move();
-                    subPathElements.add(parseImplicitCubicBezier(it, curr == 's'));
+                    subPathElements.add(parseSmoothCubicBezier(it, curr == 's'));
+                }
+                case 'q', 'Q' -> {
+                    it.move();
+                    subPathElements.add(parseQuadraticBezier(it, curr == 'q'));
+                }
+                case 't', 'T' -> {
+                    it.move();
+                    subPathElements.add(parseSmoothQuadraticBezier(it, curr == 't'));
                 }
                 case 'z', 'Z' -> {
                     it.move();
@@ -377,33 +391,61 @@ public final class Parser {
         return new SubPath(subPathElements);
     }
 
-    private static SmoothBezier parseImplicitCubicBezier(final CharacterIterator it, final boolean isRelative) {
+    private static SmoothQuadraticBezier parseSmoothQuadraticBezier(
+            final CharacterIterator it, final boolean isRelative) {
         it.skipSpaces();
 
-        final List<SmoothBezierElement> elements = new ArrayList<>();
+        final List<SmoothQuadraticBezierElement> elements = new ArrayList<>();
+
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            final Point p = parsePoint(it);
+            elements.add(new SmoothQuadraticBezierElement(p));
+        }
+
+        return new SmoothQuadraticBezier(isRelative, elements);
+    }
+
+    private static QuadraticBezier parseQuadraticBezier(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<QuadraticBezierElement> elements = new ArrayList<>();
+
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            final Point p1 = parsePoint(it);
+            final Point p = parsePoint(it);
+            elements.add(new QuadraticBezierElement(p1, p));
+        }
+
+        return new QuadraticBezier(isRelative, elements);
+    }
+
+    private static SmoothCubicBezier parseSmoothCubicBezier(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<SmoothCubicBezierElement> elements = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
             final Point p2 = parsePoint(it);
             final Point p = parsePoint(it);
-            elements.add(new SmoothBezierElement(p2, p));
+            elements.add(new SmoothCubicBezierElement(p2, p));
         }
 
-        return new SmoothBezier(isRelative, elements);
+        return new SmoothCubicBezier(isRelative, elements);
     }
 
-    private static Bezier parseCubicBezier(final CharacterIterator it, final boolean isRelative) {
+    private static CubicBezier parseCubicBezier(final CharacterIterator it, final boolean isRelative) {
         it.skipSpaces();
 
-        final List<BezierElement> elements = new ArrayList<>();
+        final List<CubicBezierElement> elements = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
             final Point p1 = parsePoint(it);
             final Point p2 = parsePoint(it);
             final Point p = parsePoint(it);
-            elements.add(new BezierElement(p1, p2, p));
+            elements.add(new CubicBezierElement(p1, p2, p));
         }
 
-        return new Bezier(isRelative, elements);
+        return new CubicBezier(isRelative, elements);
     }
 
     private static double parseNumber(final CharacterIterator it) {

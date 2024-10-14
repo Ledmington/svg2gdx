@@ -27,12 +27,12 @@ import com.ledmington.util.HashUtils;
  * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
  */
-public final class Bezier implements PathElement {
+public final class CubicBezier implements PathElement {
 
     private final boolean isRelative;
-    private final List<BezierElement> elements;
+    private final List<CubicBezierElement> elements;
 
-    public Bezier(final boolean isRelative, final List<BezierElement> elements) {
+    public CubicBezier(final boolean isRelative, final List<CubicBezierElement> elements) {
         this.isRelative = isRelative;
         Objects.requireNonNull(elements);
         if (elements.isEmpty()) {
@@ -49,13 +49,13 @@ public final class Bezier implements PathElement {
         return elements.size();
     }
 
-    public BezierElement getElement(final int idx) {
+    public CubicBezierElement getElement(final int idx) {
         return elements.get(idx);
     }
 
     @Override
     public String toString() {
-        return "Bezier(isRelative=" + isRelative + ";elements=" + elements + ")";
+        return "CubicBezier(isRelative=" + isRelative + ";elements=" + elements + ")";
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class Bezier implements PathElement {
         if (!this.getClass().equals(other.getClass())) {
             return false;
         }
-        final Bezier b = (Bezier) other;
+        final CubicBezier b = (CubicBezier) other;
         return this.isRelative == b.isRelative && this.elements.equals(b.elements);
     }
 }

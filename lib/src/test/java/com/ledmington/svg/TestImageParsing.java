@@ -30,14 +30,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.ledmington.svg.path.Bezier;
-import com.ledmington.svg.path.BezierElement;
+import com.ledmington.svg.path.CubicBezier;
+import com.ledmington.svg.path.CubicBezierElement;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
 import com.ledmington.svg.path.Point;
-import com.ledmington.svg.path.SmoothBezier;
-import com.ledmington.svg.path.SmoothBezierElement;
+import com.ledmington.svg.path.SmoothCubicBezier;
+import com.ledmington.svg.path.SmoothCubicBezierElement;
 import com.ledmington.svg.path.SubPath;
 
 public final class TestImageParsing {
@@ -92,17 +92,17 @@ public final class TestImageParsing {
                                                 List.of(new SubPath(
                                                         List.of(
                                                                 new MoveTo(false, List.of(new Point(100.0, 200.0))),
-                                                                new Bezier(
+                                                                new CubicBezier(
                                                                         false,
                                                                         List.of(
-                                                                                new BezierElement(
+                                                                                new CubicBezierElement(
                                                                                         new Point(100.0, 100.0),
                                                                                         new Point(250.0, 100.0),
                                                                                         new Point(250.0, 200.0)))),
-                                                                new SmoothBezier(
+                                                                new SmoothCubicBezier(
                                                                         false,
                                                                         List.of(
-                                                                                new SmoothBezierElement(
+                                                                                new SmoothCubicBezierElement(
                                                                                         new Point(400.0, 300.0),
                                                                                         new Point(400.0, 200.0))))))),
                                                 new Color(),

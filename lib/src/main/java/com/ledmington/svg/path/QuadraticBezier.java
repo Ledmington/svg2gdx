@@ -24,15 +24,15 @@ import java.util.Objects;
 import com.ledmington.util.HashUtils;
 
 /**
- * An SVG cubic Bezier curve (with implicit control point) command ("smooth curveto"). Official documentation available
- * <a href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
+ * An SVG quadratic Bezier curve command ("quadratic curveto"). Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
  */
-public final class SmoothBezier implements PathElement {
+public final class QuadraticBezier implements PathElement {
 
     private final boolean isRelative;
-    private final List<SmoothBezierElement> elements;
+    private final List<QuadraticBezierElement> elements;
 
-    public SmoothBezier(final boolean isRelative, final List<SmoothBezierElement> elements) {
+    public QuadraticBezier(final boolean isRelative, final List<QuadraticBezierElement> elements) {
         this.isRelative = isRelative;
         Objects.requireNonNull(elements);
         if (elements.isEmpty()) {
@@ -49,13 +49,13 @@ public final class SmoothBezier implements PathElement {
         return elements.size();
     }
 
-    public SmoothBezierElement getElement(final int idx) {
+    public QuadraticBezierElement getElement(final int idx) {
         return elements.get(idx);
     }
 
     @Override
     public String toString() {
-        return "SmoothBezier(isRelative=" + isRelative + ";elements=" + elements + ")";
+        return "QuadraticBezier(isRelative=" + isRelative + ";elements=" + elements + ")";
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class SmoothBezier implements PathElement {
         if (!this.getClass().equals(other.getClass())) {
             return false;
         }
-        final SmoothBezier sb = (SmoothBezier) other;
-        return this.isRelative == sb.isRelative && this.elements.equals(sb.elements);
+        final QuadraticBezier qb = (QuadraticBezier) other;
+        return this.isRelative == qb.isRelative && this.elements.equals(qb.elements);
     }
 }

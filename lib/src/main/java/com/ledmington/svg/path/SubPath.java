@@ -110,9 +110,9 @@ public final class SubPath implements Element {
                         }
                     }
                 }
-                case Bezier b -> {
+                case CubicBezier b -> {
                     for (int i = 0; i < b.getNumElements(); i++) {
-                        final BezierElement be = b.getElement(i);
+                        final CubicBezierElement be = b.getElement(i);
                         if (b.isRelative()) {
                             sr.curve(
                                     (float) current.x(),
@@ -235,7 +235,7 @@ public final class SubPath implements Element {
                         }
                     }
                 }
-                case Bezier b -> {
+                case CubicBezier b -> {
                     if (b.isRelative()) {
                         while (elements.get(i) instanceof Point) {
                             Point c1 = (Point) elements.get(i++);
