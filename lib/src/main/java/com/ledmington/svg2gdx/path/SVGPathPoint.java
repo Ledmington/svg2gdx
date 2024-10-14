@@ -17,7 +17,20 @@
  */
 package com.ledmington.svg2gdx.path;
 
+/**
+ * A point in an SVG path element.
+ *
+ * @param x The x coordinate.
+ * @param y The y coordinate.
+ */
 public record SVGPathPoint(double x, double y) implements SVGPathElement {
+
+    /**
+     * Adds the coordinates of the given point to this point and returns a new instance.
+     *
+     * @param p The point to be added.
+     * @return A new point with the new coordinates.
+     */
     public SVGPathPoint add(final SVGPathPoint p) {
         return new SVGPathPoint(this.x + p.x, this.y + p.y);
     }

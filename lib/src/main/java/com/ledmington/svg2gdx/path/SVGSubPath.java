@@ -17,12 +17,12 @@
  */
 package com.ledmington.svg2gdx.path;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import com.ledmington.svg2gdx.ParseUtils;
-import com.ledmington.svg2gdx.SVGColor;
 import com.ledmington.svg2gdx.SVGElement;
 import com.ledmington.svg2gdx.SVGPalette;
 
@@ -30,30 +30,64 @@ import com.ledmington.svg2gdx.SVGPalette;
  * An SVG path element. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathData">here</a>.
  */
-public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
+public final class SVGSubPath implements SVGElement {
 
+    // TODO: make modifiable by the user
     private static final int DEFAULT_CURVE_SEGMENTS = 50;
 
-    public void draw(
-            final ShapeRenderer sr, final SVGPalette palette, final String colorName, final SVGPathPoint initial) {
-        final SVGColor c = palette.getFromName(colorName);
-        sr.setColor(
-                ParseUtils.byteToFloat(c.r()),
-                ParseUtils.byteToFloat(c.g()),
-                ParseUtils.byteToFloat(c.b()),
-                ParseUtils.byteToFloat(c.a()));
+    private final List<SVGPathElement> elements;
+
+    /**
+     * Creates a new SVGSubPath with the given list of path elements, which must not be empty.
+     *
+     * @param elements The non-empty list of path elements.
+     */
+    public SVGSubPath(final List<SVGPathElement> elements) {
+        Objects.requireNonNull(elements);
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of path elements");
+        }
+        if (!(elements.getFirst() instanceof SVGPathMoveTo)) {
+            throw new IllegalArgumentException(String.format(
+                    "Expected first subpath element to be a 'moveto' element but was a '%s'",
+                    elements.getFirst().toString()));
+        }
+        this.elements = Collections.unmodifiableList(elements);
+    }
+
+    /**
+     * Returns the number of path elements contained in this subpath.
+     *
+     * @return The number of path elements.
+     */
+    public int getNumElements() {
+        return elements.size();
+    }
+
+    /**
+     * Returns the element at the given index.
+     *
+     * @param idx The index of the element.
+     * @return The elment at the given index.
+     */
+    public SVGPathElement getElement(final int idx) {
+        return elements.get(idx);
+    }
+
+    public void draw(final ShapeRenderer sr, final SVGPalette palette, final SVGPathPoint initial) {
 
         SVGPathPoint current = null;
         for (final SVGPathElement e : elements) {
             switch (e) {
-                case SVGPathMoveto m -> {
+                case SVGPathMoveTo m -> {
                     if (m.isRelative()) {
                         current = (current == null) ? new SVGPathPoint(0.0, 0.0).add(initial) : current.add(initial);
                     } else {
                         current = initial;
                     }
 
-                    for (final SVGPathPoint next : m.implicitLines()) {
+                    for (int i = 0; i < m.getNumPoints(); i++) {
+                        final SVGPathPoint next = m.getPoint(i);
                         if (m.isRelative()) {
                             sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
                                     (current.y() + next.y()));
@@ -65,7 +99,8 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                     }
                 }
                 case SVGPathLineto l -> {
-                    for (final SVGPathPoint p : l.points()) {
+                    for (int j = 0; j < l.getNumPoints(); j++) {
+                        final SVGPathPoint p = l.getPoint(j);
                         if (l.isRelative()) {
                             sr.line((float) current.x(), (float) current.y(), (float) (current.x() + p.x()), (float)
                                     (current.y() + p.y()));
@@ -77,7 +112,8 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                     }
                 }
                 case SVGPathBezier b -> {
-                    for (final SVGPathBezierElement be : b.elements()) {
+                    for (int i = 0; i < b.getNumElements(); i++) {
+                        final SVGPathBezierElement be = b.getElement(i);
                         if (b.isRelative()) {
                             sr.curve(
                                     (float) current.x(),
@@ -112,6 +148,9 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                 default -> throw new IllegalArgumentException(String.format("Unknown SVG path element type '%s'", e));
             }
         }
+
+        // close the path
+        sr.line((float) current.x(), (float) current.y(), (float) initial.x(), (float) initial.y());
     }
 
     @Override
@@ -120,11 +159,10 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
         sb.append("sr.setColor(Color.BLACK);\n");
 
         SVGPathPoint initialPoint = null;
-        int i = 0;
-        while (i < elements.size()) {
+        for (int i = 0; i < elements.size(); i++) {
             final SVGPathElement elem = elements.get(i);
             switch (elem) {
-                case SVGPathMoveto m -> {
+                case SVGPathMoveTo m -> {
                     i++;
                     final SVGPathPoint current = (SVGPathPoint) elements.get(i++);
                     sb.append("currentX = ")
@@ -168,12 +206,13 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                 }
                 case SVGPathLineto l -> {
                     sb.append("currentX = ")
-                            .append(l.points().getFirst().x())
+                            .append(l.getPoint(0).x())
                             .append("f;\ncurrentY = ")
-                            .append(l.points().getFirst().y())
+                            .append(l.getPoint(0).y())
                             .append("f;\n");
                     if (l.isRelative()) {
-                        for (final SVGPathPoint next : l.points()) {
+                        for (int j = 0; j < l.getNumPoints(); j++) {
+                            final SVGPathPoint next = l.getPoint(j);
                             sb.append(String.format(
                                             "sr.line(currentX, currentY, currentX + %sf, currentY + %sf);",
                                             next.x(), next.y()))
@@ -185,7 +224,8 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                                     .append("f;\n");
                         }
                     } else {
-                        for (final SVGPathPoint next : l.points()) {
+                        for (int j = 0; j < l.getNumPoints(); j++) {
+                            final SVGPathPoint next = l.getPoint(j);
                             sb.append(String.format("sr.line(currentX, currentY, %sf, %sf);", next.x(), next.y()))
                                     .append('\n')
                                     .append("currentX = ")
@@ -229,19 +269,16 @@ public record SVGSubPath(List<SVGPathElement> elements) implements SVGElement {
                         }
                     }
                 }
-                case SVGPathClosepath ignored -> {
-                    sb.append("sr.line(currentX, currentY, initialX, initialY);\n");
-                    sb.append("initialX = 0.0f;\ninitialY = 0.0f;\n");
-                    initialPoint = null;
-                    sb.append("currentX = 0.0f;\ncurrentY = 0.0f;\n");
-                    i++;
-                }
                 default -> throw new IllegalArgumentException(
                         String.format("Unknown SVG path element type '%s'", elem));
             }
         }
 
-        // sb.append("sr.end();\n");
+        // close the path
+        sb.append("sr.line(currentX, currentY, initialX, initialY);\n");
+        sb.append("initialX = 0.0f;\ninitialY = 0.0f;\n");
+        sb.append("currentX = 0.0f;\ncurrentY = 0.0f;\n");
+
         return sb.toString();
     }
 }

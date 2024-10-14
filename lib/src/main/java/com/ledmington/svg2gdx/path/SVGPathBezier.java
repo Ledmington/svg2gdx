@@ -17,9 +17,37 @@
  */
 package com.ledmington.svg2gdx.path;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
  */
-public record SVGPathBezier(boolean isRelative, java.util.List<SVGPathBezierElement> elements)
-        implements SVGPathElement {}
+public final class SVGPathBezier implements SVGPathElement {
+
+    private final boolean isRelative;
+    private final List<SVGPathBezierElement> elements;
+
+    public SVGPathBezier(final boolean isRelative, final List<SVGPathBezierElement> elements) {
+        this.isRelative = isRelative;
+        Objects.requireNonNull(elements);
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of bezier elements");
+        }
+        this.elements = Collections.unmodifiableList(elements);
+    }
+
+    public boolean isRelative() {
+        return isRelative;
+    }
+
+    public int getNumElements() {
+        return elements.size();
+    }
+
+    public SVGPathBezierElement getElement(final int idx) {
+        return elements.get(idx);
+    }
+}

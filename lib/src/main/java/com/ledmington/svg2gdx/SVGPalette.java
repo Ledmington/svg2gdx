@@ -22,10 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/** A collection of all the colors which appear in an SVGImage. */
 public final class SVGPalette implements SVGElement {
 
     static final class SVGPaletteBuilder {
 
+        // TODO: refactor with a BiMap
         private final Map<SVGColor, String> fromColorToName = new HashMap<>();
         private final Map<String, SVGColor> fromNameToColor = new HashMap<>();
         private int id = 0;
@@ -75,6 +77,12 @@ public final class SVGPalette implements SVGElement {
         this.fromNameToColor = Collections.unmodifiableMap(fromNameToColor);
     }
 
+    /**
+     * Returns a cached color given its name.
+     *
+     * @param colorName The name of the color to look for.
+     * @return The corresponding color.
+     */
     public SVGColor getFromName(final String colorName) {
         Objects.requireNonNull(colorName);
         if (!fromNameToColor.containsKey(colorName)) {

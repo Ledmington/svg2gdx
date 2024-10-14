@@ -28,6 +28,7 @@ import com.ledmington.svg2gdx.path.SVGPath;
 /** A parsed SVG image. Official reference available <a href="https://www.w3.org/TR/SVG2/">here</a>. */
 public final class SVGImage implements SVGElement {
 
+    private final SVGViewBox viewBox;
     private final double width;
     private final double height;
     private final SVGPalette palette;
@@ -42,7 +43,12 @@ public final class SVGImage implements SVGElement {
      * @param elements The inner elements of this image.
      */
     public SVGImage(
-            final double width, final double height, final SVGPalette palette, final List<SVGElement> elements) {
+            final SVGViewBox viewBox,
+            final double width,
+            final double height,
+            final SVGPalette palette,
+            final List<SVGElement> elements) {
+        this.viewBox = Objects.requireNonNull(viewBox);
         if (width < 0.0 || height < 0.0) {
             throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
         }
@@ -52,6 +58,11 @@ public final class SVGImage implements SVGElement {
         this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
     }
 
+    /**
+     * Renders this image on the screen by using the given ShapeRenderer.
+     *
+     * @param sr The ShapeRenderer to be used.
+     */
     public void draw(final ShapeRenderer sr) {
         sr.setAutoShapeType(true);
         sr.begin();

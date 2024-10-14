@@ -83,6 +83,12 @@ public final class ParseUtils {
         return asByte(x << n);
     }
 
+    /**
+     * Converts an unsigned byte into a float in [0;1].
+     *
+     * @param x The unsigned byte to be converted.
+     * @return A float mapped in [0;1].
+     */
     public static float byteToFloat(final byte x) {
         final double y = x >= 0 ? (double) x : (double) x + 256.0;
         return (float) (y / 255.0);

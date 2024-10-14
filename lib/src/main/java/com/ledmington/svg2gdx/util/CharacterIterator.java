@@ -15,6 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg2gdx.path;
+package com.ledmington.svg2gdx.util;
 
-public record SVGPathClosepath() implements SVGPathElement {}
+import java.util.Objects;
+
+public final class CharacterIterator {
+
+    private final String s;
+    private int i = 0;
+
+    public CharacterIterator(final String s) {
+        this.s = Objects.requireNonNull(s);
+    }
+
+    public boolean hasNext() {
+        return i < s.length();
+    }
+
+    public char current() {
+        return s.charAt(i);
+    }
+
+    public void move() {
+        i++;
+    }
+
+    public void skipSpaces() {
+        while (hasNext() && current() == ' ') {
+            move();
+        }
+    }
+
+    public void skipSpacesAndCommas() {
+        while (hasNext() && (current() == ' ' || current() == ',')) {
+            move();
+        }
+    }
+}

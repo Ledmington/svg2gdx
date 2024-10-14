@@ -17,18 +17,30 @@
  */
 package com.ledmington.svg2gdx.path;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg2gdx.SVGElement;
 import com.ledmington.svg2gdx.SVGPalette;
 
-public record SVGPath(String colorName, List<SVGSubPath> subpaths) implements SVGElement {
+public final class SVGPath implements SVGElement {
+
+    private final List<SVGSubPath> subpaths;
+
+    public SVGPath(final List<SVGSubPath> subpaths) {
+        Objects.requireNonNull(subpaths);
+        if (subpaths.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of subpaths");
+        }
+        this.subpaths = Collections.unmodifiableList(subpaths);
+    }
+
     public void draw(final ShapeRenderer sr, final SVGPalette palette) {
         for (final SVGSubPath subpath : subpaths) {
-            subpath.draw(
-                    sr, palette, colorName, ((SVGPathMoveto) subpath.elements().getFirst()).initialPoint());
+            subpath.draw(sr, palette, ((SVGPathMoveTo) subpath.getElement(0)).getPoint(0));
         }
     }
 

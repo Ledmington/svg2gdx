@@ -17,8 +17,6 @@
  */
 package com.ledmington.svg2gdx;
 
-import java.util.Objects;
-
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 /**
@@ -29,47 +27,32 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
  * @param y y coordinate of the top side of the rectangle.
  * @param width The width of the rectangle.
  * @param height The height of the rectangle.
- * @param filled Whether this rectangle is filled with color or not. If not filled, its color applies only to the
- *     borders.
- * @param colorName The name of the color of this rectangle.
  */
-record SVGRectangle(double x, double y, double width, double height, boolean filled, String colorName)
+record SVGRectangle(double x, double y, double width, double height, SVGColor fill, SVGColor stroke, double strokeWidth)
         implements SVGElement {
-    public SVGRectangle(
-            final double x,
-            final double y,
-            final double width,
-            final double height,
-            final boolean filled,
-            final String colorName) {
-        if (width <= 0.0 || height <= 0.0) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid width and height arguments: %f %f", width, height));
-        }
-
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.filled = filled;
-        this.colorName = Objects.requireNonNull(colorName);
-    }
-
     public void draw(final ShapeRenderer sr, final SVGPalette palette) {
-        sr.set(filled ? ShapeRenderer.ShapeType.Filled : ShapeRenderer.ShapeType.Line);
-        final SVGColor c = palette.getFromName(colorName);
+        sr.set(ShapeRenderer.ShapeType.Filled);
         sr.setColor(
-                ParseUtils.byteToFloat(c.r()),
-                ParseUtils.byteToFloat(c.g()),
-                ParseUtils.byteToFloat(c.b()),
-                ParseUtils.byteToFloat(c.a()));
+                ParseUtils.byteToFloat(fill.r()),
+                ParseUtils.byteToFloat(fill.g()),
+                ParseUtils.byteToFloat(fill.b()),
+                ParseUtils.byteToFloat(fill.a()));
+        sr.rect((float) x, (float) y, (float) width, (float) height);
+
+        sr.set(ShapeRenderer.ShapeType.Line);
+        sr.setColor(
+                ParseUtils.byteToFloat(stroke.r()),
+                ParseUtils.byteToFloat(stroke.g()),
+                ParseUtils.byteToFloat(stroke.b()),
+                ParseUtils.byteToFloat(stroke.a()));
         sr.rect((float) x, (float) y, (float) width, (float) height);
     }
 
     @Override
     public String toGDXShapeRenderer() {
-        return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
-                + String.format("sr.setColor(%s);", colorName) + '\n'
-                + String.format("sr.rect(%sf, %sf, %sf, %sf);", x, y, width, height) + '\n';
+        // return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
+        // + String.format("sr.setColor(%s);", colorName) + '\n'
+        // + String.format("sr.rect(%sf, %sf, %sf, %sf);", x, y, width, height) + '\n';
+        throw new Error("Not implemented");
     }
 }

@@ -89,7 +89,7 @@ allprojects {
 
         showExceptions true
         showStackTraces true
-        showFullStackTraces false
+        showFullStackTraces true
         showCauses true
 
         slowThreshold 2000

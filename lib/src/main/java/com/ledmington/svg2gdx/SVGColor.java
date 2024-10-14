@@ -27,7 +27,7 @@ package com.ledmington.svg2gdx;
  */
 public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
 
-    /** Creates a default RGBA color with all components set to 0 (black). */
+    /** Creates a default RGBA color with all components set to 0 (transparent black). */
     public SVGColor() {
         this((byte) 0, (byte) 0, (byte) 0, (byte) 0);
     }

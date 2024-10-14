@@ -47,7 +47,7 @@ import org.openjdk.jmh.infra.Blackhole;
 @Timeout(time = 5)
 public class SVGImageParsing {
 
-    private static File image;
+    private File image;
 
     @Setup(Level.Iteration)
     public void setup() {
