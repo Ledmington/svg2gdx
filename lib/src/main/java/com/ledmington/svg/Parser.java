@@ -42,6 +42,7 @@ import com.ledmington.svg.path.SmoothCubicBezierElement;
 import com.ledmington.svg.path.SmoothQuadraticBezier;
 import com.ledmington.svg.path.SmoothQuadraticBezierElement;
 import com.ledmington.svg.path.SubPath;
+import com.ledmington.svg.path.VerticalLineTo;
 import com.ledmington.util.CharacterIterator;
 import com.ledmington.util.ParseUtils;
 
@@ -396,6 +397,10 @@ public final class Parser {
                     it.move();
                     subPathElements.add(parseHorizontalLineTo(it, curr == 'h'));
                 }
+                case 'v', 'V' -> {
+                    it.move();
+                    subPathElements.add(parseVerticalLineTo(it, curr == 'v'));
+                }
                 case 'c', 'C' -> {
                     it.move();
                     subPathElements.add(parseCubicBezier(it, curr == 'c'));
@@ -561,12 +566,26 @@ public final class Parser {
         return new HorizontalLineTo(isRelative, x);
     }
 
+    private static VerticalLineTo parseVerticalLineTo(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<Double> x = new ArrayList<>();
+
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
+            x.add(parseNumber(it));
+            it.skipSpaces();
+        }
+
+        return new VerticalLineTo(isRelative, x);
+    }
+
     private static Color parseColor(final String v) {
         return switch (v) {
             case "none" -> new Color();
             case "black" -> new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0xff);
             case "red" -> new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff);
             case "blue" -> new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff);
+            case "yellow" -> new Color((byte) 0xff, (byte) 0xff, (byte) 0, (byte) 0xff);
             default -> {
                 if (v.charAt(0) == '#' && v.length() == 7) {
                     final byte r = ParseUtils.parseByteHex(v.substring(1, 3));

@@ -23,35 +23,46 @@ import java.util.Objects;
 
 import com.ledmington.util.HashUtils;
 
-public final class Arc implements PathElement {
+/**
+ * An SVG "vertical lineto" command. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
+ */
+public final class VerticalLineTo implements PathElement {
 
     private final boolean isRelative;
-    private final List<ArcElement> elements;
+    private final List<Double> x;
 
-    public Arc(final boolean isRelative, final List<ArcElement> elements) {
+    public VerticalLineTo(final boolean isRelative, final List<Double> x) {
         this.isRelative = isRelative;
-        Objects.requireNonNull(elements);
-        if (elements.isEmpty()) {
-            throw new IllegalArgumentException("Empty list of elements");
+        Objects.requireNonNull(x);
+        if (x.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of coordinates");
         }
-        this.elements = Collections.unmodifiableList(elements);
+        this.x = Collections.unmodifiableList(x);
     }
 
-    @Override
     public boolean isRelative() {
         return isRelative;
     }
 
+    public int getNumCoordinates() {
+        return x.size();
+    }
+
+    public double getCoordinate(final int idx) {
+        return x.get(idx);
+    }
+
     @Override
     public String toString() {
-        return "Arc(isRelative=" + isRelative + ";elements=" + elements + ')';
+        return "VerticalLineTo(isRelative=" + isRelative + ";coordinates=" + x + ")";
     }
 
     @Override
     public int hashCode() {
         int h = 17;
         h = 31 * h + HashUtils.hash(isRelative);
-        h = 31 * h + elements.hashCode();
+        h = 31 * h + x.hashCode();
         return h;
     }
 
@@ -66,7 +77,7 @@ public final class Arc implements PathElement {
         if (!this.getClass().equals(other.getClass())) {
             return false;
         }
-        final Arc a = (Arc) other;
-        return this.isRelative == a.isRelative && this.elements.equals(a.elements);
+        final VerticalLineTo vlt = (VerticalLineTo) other;
+        return this.isRelative == vlt.isRelative && this.x.equals(vlt.x);
     }
 }

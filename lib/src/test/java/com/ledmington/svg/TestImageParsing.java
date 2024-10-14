@@ -30,8 +30,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.ledmington.svg.path.Arc;
+import com.ledmington.svg.path.ArcElement;
 import com.ledmington.svg.path.CubicBezier;
 import com.ledmington.svg.path.CubicBezierElement;
+import com.ledmington.svg.path.HorizontalLineTo;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
@@ -43,6 +46,7 @@ import com.ledmington.svg.path.SmoothCubicBezierElement;
 import com.ledmington.svg.path.SmoothQuadraticBezier;
 import com.ledmington.svg.path.SmoothQuadraticBezierElement;
 import com.ledmington.svg.path.SubPath;
+import com.ledmington.svg.path.VerticalLineTo;
 
 public final class TestImageParsing {
 
@@ -68,7 +72,7 @@ public final class TestImageParsing {
                                                 1.0,
                                                 398.0,
                                                 398.0,
-                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color(),
                                                 new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
                                                 0.0),
                                         new Path(
@@ -131,7 +135,7 @@ public final class TestImageParsing {
                                                 1.0,
                                                 1198.0,
                                                 598.0,
-                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color(),
                                                 new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
                                                 1.0),
                                         new Path(
@@ -149,13 +153,13 @@ public final class TestImageParsing {
                                                                         List.of(
                                                                                 new SmoothQuadraticBezierElement(
                                                                                         new Point(1000.0, 300.0))))))),
-                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color(),
                                                 new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff),
                                                 5.0),
                                         new Group(
                                                 new Style(
                                                         new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0xff),
-                                                        new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                        new Color(),
                                                         0.0),
                                                 List.of(
                                                         new Circle(200.0, 300.0, 10.0),
@@ -164,7 +168,7 @@ public final class TestImageParsing {
                                         new Group(
                                                 new Style(
                                                         new Color((byte) 0x88, (byte) 0x88, (byte) 0x88, (byte) 0xff),
-                                                        new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                        new Color(),
                                                         0.0),
                                                 List.of(new Circle(400.0, 50.0, 10.0), new Circle(800.0, 550.0, 10.0))),
                                         new Path(
@@ -175,10 +179,88 @@ public final class TestImageParsing {
                                                                 new LineTo(false, List.of(new Point(600.0, 300.0))),
                                                                 new LineTo(false, List.of(new Point(800.0, 550.0))),
                                                                 new LineTo(false, List.of(new Point(1000.0, 300.0)))))),
-                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color(),
                                                 new Color((byte) 0x88, (byte) 0x88, (byte) 0x88, (byte) 0xff),
                                                 2.0)))),
-                Arguments.of(load.apply("arcs01.svg"), null));
+                Arguments.of(
+                        load.apply("arcs01.svg"),
+                        new Image(
+                                new ViewBox(0.0, 0.0, 1200.0, 400.0),
+                                453.54,
+                                198.42375,
+                                List.of(
+                                        new Rectangle(
+                                                1.0,
+                                                1.0,
+                                                1198.0,
+                                                398.0,
+                                                new Color(),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                1.0),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(300.0, 200.0))),
+                                                                new HorizontalLineTo(true, List.of(-150.0)),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        150.0, 150.0, 0.0, 1.0, 0.0,
+                                                                                        150.0, -150.0)))))),
+                                                new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                5.0),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(275.0, 175.0))),
+                                                                new VerticalLineTo(true, List.of(-150.0)),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        150.0, 150.0, 0.0, 0.0, 0.0,
+                                                                                        -150.0, 150.0)))))),
+                                                new Color((byte) 0xff, (byte) 0xff, (byte) 0, (byte) 0xff),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                5.0),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(600.0, 350.0))),
+                                                                new LineTo(true, List.of(new Point(50.0, -25.0))),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        25.0, 25.0, -30.0, 0.0, 1.0,
+                                                                                        50.0, -25.0))),
+                                                                new LineTo(true, List.of(new Point(50.0, -25.0))),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        25.0, 50.0, -30.0, 0.0, 1.0,
+                                                                                        50.0, -25.0))),
+                                                                new LineTo(true, List.of(new Point(50.0, -25.0))),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        25.0, 75.0, -30.0, 0.0, 1.0,
+                                                                                        50.0, -25.0))),
+                                                                new LineTo(true, List.of(new Point(50.0, -25.0))),
+                                                                new Arc(
+                                                                        true,
+                                                                        List.of(
+                                                                                new ArcElement(
+                                                                                        25.0, 100.0, -30.0, 0.0, 1.0,
+                                                                                        50.0, -25.0))),
+                                                                new LineTo(true, List.of(new Point(50.0, -25.0)))))),
+                                                new Color(),
+                                                new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff),
+                                                5.0)))));
     }
 
     @ParameterizedTest
