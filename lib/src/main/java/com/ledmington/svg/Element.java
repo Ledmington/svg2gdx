@@ -15,7 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ledmington.svg.path;
+package com.ledmington.svg;
 
-public record SVGPathBezierElement(
-        SVGPathPoint firstControlPoint, SVGPathPoint secondControlPoint, SVGPathPoint endPoint) {}
+/** An element of an SVG image. */
+public interface Element {
+
+    /**
+     * Serializes this SVGElement into libGDX ShapeRenderer code.
+     *
+     * @return A possibly multi-line String containing valid java libGDX ShapeRenderer code.
+     */
+    String toGDXShapeRenderer();
+}

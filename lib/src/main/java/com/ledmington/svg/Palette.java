@@ -23,18 +23,18 @@ import java.util.Map;
 import java.util.Objects;
 
 /** A collection of all the colors which appear in an SVGImage. */
-public final class SVGPalette implements SVGElement {
+public final class Palette implements Element {
 
     static final class SVGPaletteBuilder {
 
         // TODO: refactor with a BiMap
-        private final Map<SVGColor, String> fromColorToName = new HashMap<>();
-        private final Map<String, SVGColor> fromNameToColor = new HashMap<>();
+        private final Map<Color, String> fromColorToName = new HashMap<>();
+        private final Map<String, Color> fromNameToColor = new HashMap<>();
         private int id = 0;
 
         public SVGPaletteBuilder() {}
 
-        public void add(final SVGColor color) {
+        public void add(final Color color) {
             Objects.requireNonNull(color);
             if (fromColorToName.containsKey(color)) {
                 return;
@@ -45,7 +45,7 @@ public final class SVGPalette implements SVGElement {
             id++;
         }
 
-        public String getName(final SVGColor color) {
+        public String getName(final Color color) {
             Objects.requireNonNull(color);
             if (!fromColorToName.containsKey(color)) {
                 throw new IllegalArgumentException(String.format("Unknown color '%s'", color));
@@ -53,8 +53,8 @@ public final class SVGPalette implements SVGElement {
             return fromColorToName.get(color);
         }
 
-        public SVGPalette build() {
-            return new SVGPalette(fromColorToName, fromNameToColor);
+        public Palette build() {
+            return new Palette(fromColorToName, fromNameToColor);
         }
     }
 
@@ -63,10 +63,10 @@ public final class SVGPalette implements SVGElement {
     }
 
     // TODO: refactor with a BiMap
-    private final Map<SVGColor, String> fromColorToName;
-    private final Map<String, SVGColor> fromNameToColor;
+    private final Map<Color, String> fromColorToName;
+    private final Map<String, Color> fromNameToColor;
 
-    private SVGPalette(final Map<SVGColor, String> fromColorToName, final Map<String, SVGColor> fromNameToColor) {
+    private Palette(final Map<Color, String> fromColorToName, final Map<String, Color> fromNameToColor) {
         Objects.requireNonNull(fromColorToName);
         Objects.requireNonNull(fromNameToColor);
         if (fromColorToName.size() != fromNameToColor.size()) {
@@ -83,7 +83,7 @@ public final class SVGPalette implements SVGElement {
      * @param colorName The name of the color to look for.
      * @return The corresponding color.
      */
-    public SVGColor getFromName(final String colorName) {
+    public Color getFromName(final String colorName) {
         Objects.requireNonNull(colorName);
         if (!fromNameToColor.containsKey(colorName)) {
             throw new IllegalArgumentException(String.format("Unknown color name '%s'", colorName));
@@ -94,7 +94,7 @@ public final class SVGPalette implements SVGElement {
     @Override
     public String toGDXShapeRenderer() {
         final StringBuilder sb = new StringBuilder();
-        for (final Map.Entry<SVGColor, String> e : fromColorToName.entrySet()) {
+        for (final Map.Entry<Color, String> e : fromColorToName.entrySet()) {
             sb.append(String.format(
                             "final Color %s = %s", e.getValue(), e.getKey().toGDXShapeRenderer()))
                     .append('\n');

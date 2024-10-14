@@ -23,9 +23,9 @@ import java.util.function.Consumer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import com.ledmington.svg.ParseUtils;
-import com.ledmington.svg.SVGImage;
-import com.ledmington.svg.SVGParser;
+import com.ledmington.svg.Image;
+import com.ledmington.svg.Parser;
+import com.ledmington.svg.util.ParseUtils;
 
 import org.openjdk.jol.info.GraphLayout;
 
@@ -122,7 +122,7 @@ public class Main {
         // Needed to make jol's GraphLayout work
         System.setProperty("jol.magicFieldOffset", "true");
 
-        final SVGImage parsed = SVGParser.parseImage(new File(filename));
+        final Image parsed = Parser.parseImage(new File(filename));
         System.out.printf(
                 "One runtime instance of this image occupies %,d bytes.%n",
                 GraphLayout.parseInstance(parsed).totalSize());

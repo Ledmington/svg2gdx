@@ -49,7 +49,7 @@ public final class TestImageParsing {
 
     @ParameterizedTest
     @MethodSource("testSVGFiles")
-    void testParsing(final File image, final SVGImage expected) {
-        assertEquals(expected, SVGParser.parseImage(image));
+    void testParsing(final File image, final Image expected) {
+        assertEquals(expected, Parser.parseImage(image));
     }
 }

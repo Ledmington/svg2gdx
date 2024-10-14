@@ -17,4 +17,4 @@
  */
 package com.ledmington.svg;
 
-public record SVGViewBox(double x, double y, double width, double height) {}
+public record ViewBox(double x, double y, double width, double height) {}

@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import com.ledmington.svg.SVGParser;
+import com.ledmington.svg.Parser;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -63,6 +63,6 @@ public class SVGImageParsing {
 
     @Benchmark
     public void parse(final Blackhole bh) {
-        bh.consume(SVGParser.parseImage(image));
+        bh.consume(Parser.parseImage(image));
     }
 }

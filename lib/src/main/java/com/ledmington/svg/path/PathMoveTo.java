@@ -22,15 +22,21 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * An SVG "lineto" command. Official documentation available <a
- * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
+ * The SVG path element relative to 'moveto' commands. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands">here</a>.
  */
-public final class SVGPathLineto implements SVGPathElement {
+public final class PathMoveTo implements PathElement {
 
     private final boolean isRelative;
-    private final List<SVGPathPoint> points;
+    private final List<Point> points;
 
-    public SVGPathLineto(final boolean isRelative, final List<SVGPathPoint> points) {
+    /**
+     * Creates a new path 'moveto' element.
+     *
+     * @param isRelative True if this element is relative, false if it is absolute.
+     * @param points The non-empty list of points of this element.
+     */
+    public PathMoveTo(final boolean isRelative, final List<Point> points) {
         this.isRelative = isRelative;
         Objects.requireNonNull(points);
         if (points.isEmpty()) {
@@ -39,15 +45,36 @@ public final class SVGPathLineto implements SVGPathElement {
         this.points = Collections.unmodifiableList(points);
     }
 
+    /**
+     * Returns true if this element is relative, false if it is absolute.
+     *
+     * @return True if relative, false if absolute.
+     */
     public boolean isRelative() {
         return isRelative;
     }
 
+    /**
+     * Returns the number of points in this element.
+     *
+     * @return The number of points in this element.
+     */
     public int getNumPoints() {
         return points.size();
     }
 
-    public SVGPathPoint getPoint(final int idx) {
+    /**
+     * Returns the point at the given index.
+     *
+     * @param idx The index of the element.
+     * @return The element at the given index.
+     */
+    public Point getPoint(final int idx) {
         return points.get(idx);
+    }
+
+    @Override
+    public String toString() {
+        return "SVGPathMoveTo(isRelative=" + isRelative + ";points=" + points + ")";
     }
 }

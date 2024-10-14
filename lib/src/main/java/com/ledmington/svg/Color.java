@@ -17,6 +17,8 @@
  */
 package com.ledmington.svg;
 
+import com.ledmington.svg.util.ParseUtils;
+
 /**
  * An RGBA color.
  *
@@ -25,10 +27,10 @@ package com.ledmington.svg;
  * @param b The blue component.
  * @param a The alpha component.
  */
-public record SVGColor(byte r, byte g, byte b, byte a) implements SVGElement {
+public record Color(byte r, byte g, byte b, byte a) implements Element {
 
     /** Creates a default RGBA color with all components set to 0 (transparent black). */
-    public SVGColor() {
+    public Color() {
         this((byte) 0, (byte) 0, (byte) 0, (byte) 0);
     }
 

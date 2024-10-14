@@ -21,33 +21,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
- * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
- */
-public final class SVGPathBezier implements SVGPathElement {
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-    private final boolean isRelative;
-    private final List<SVGPathBezierElement> elements;
+import com.ledmington.svg.Element;
+import com.ledmington.svg.Palette;
 
-    public SVGPathBezier(final boolean isRelative, final List<SVGPathBezierElement> elements) {
-        this.isRelative = isRelative;
-        Objects.requireNonNull(elements);
-        if (elements.isEmpty()) {
-            throw new IllegalArgumentException("Empty list of bezier elements");
+public final class Path implements Element {
+
+    private final List<SubPath> subpaths;
+
+    public Path(final List<SubPath> subpaths) {
+        Objects.requireNonNull(subpaths);
+        if (subpaths.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of subpaths");
         }
-        this.elements = Collections.unmodifiableList(elements);
+        this.subpaths = Collections.unmodifiableList(subpaths);
     }
 
-    public boolean isRelative() {
-        return isRelative;
+    public void draw(final ShapeRenderer sr, final Palette palette) {
+        for (final SubPath subpath : subpaths) {
+            subpath.draw(sr, palette, ((PathMoveTo) subpath.getElement(0)).getPoint(0));
+        }
     }
 
-    public int getNumElements() {
-        return elements.size();
-    }
-
-    public SVGPathBezierElement getElement(final int idx) {
-        return elements.get(idx);
+    @Override
+    public String toGDXShapeRenderer() {
+        throw new Error("Not implemented");
     }
 }

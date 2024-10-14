@@ -27,23 +27,23 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.ledmington.svg.path.SVGPath;
-import com.ledmington.svg.path.SVGPathElement;
-import com.ledmington.svg.path.SVGPathMoveTo;
-import com.ledmington.svg.path.SVGPathPoint;
-import com.ledmington.svg.path.SVGSubPath;
+import com.ledmington.svg.path.Path;
+import com.ledmington.svg.path.PathElement;
+import com.ledmington.svg.path.PathMoveTo;
+import com.ledmington.svg.path.Point;
+import com.ledmington.svg.path.SubPath;
 import com.ledmington.svg.util.CharacterIterator;
+import com.ledmington.svg.util.ParseUtils;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /** Parser of SVG images. */
-public final class SVGParser {
+public final class Parser {
 
-    private SVGParser() {}
+    private Parser() {}
 
     /**
      * Parses the given file into an SVGImage instance.
@@ -51,7 +51,7 @@ public final class SVGParser {
      * @param inputFile The .svg file to be parsed.
      * @return An SVGImage instance.
      */
-    public static SVGImage parseImage(final File inputFile) {
+    public static Image parseImage(final File inputFile) {
         final Document doc;
         try {
             doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputFile);
@@ -59,7 +59,7 @@ public final class SVGParser {
             throw new RuntimeException(e);
         }
         doc.getDocumentElement().normalize();
-        final Element root = doc.getDocumentElement();
+        final org.w3c.dom.Element root = doc.getDocumentElement();
         if (!root.getNodeName().equals("svg")) {
             throw new IllegalArgumentException(
                     String.format("Invalid root element: expected 'svg' but was '%s'", root.getNodeName()));
@@ -115,11 +115,11 @@ public final class SVGParser {
             viewBoxHeight = imageHeight;
         }
 
-        final SVGViewBox vb = new SVGViewBox(viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight);
+        final ViewBox vb = new ViewBox(viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight);
 
-        final SVGPalette.SVGPaletteBuilder palette = SVGPalette.builder();
+        final Palette.SVGPaletteBuilder palette = Palette.builder();
 
-        final List<SVGElement> elements = new ArrayList<>();
+        final List<Element> elements = new ArrayList<>();
         final NodeList children = root.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             final Node node = children.item(i);
@@ -143,7 +143,7 @@ public final class SVGParser {
             }
         }
 
-        return new SVGImage(vb, imageWidth, imageHeight, palette.build(), elements);
+        return new Image(vb, imageWidth, imageHeight, palette.build(), elements);
     }
 
     private static double parseSize(final String input) {
@@ -193,7 +193,7 @@ public final class SVGParser {
         return m;
     }
 
-    private static SVGRectangle parseRectangle(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
+    private static Rectangle parseRectangle(final Node node, final Palette.SVGPaletteBuilder palette) {
         if (node.getChildNodes().getLength() != 0) {
             throw new IllegalArgumentException("Weird 'rect' element with more than 0 child nodes.");
         }
@@ -202,8 +202,8 @@ public final class SVGParser {
         double y = 0.0;
         double width = 0.0;
         double height = 0.0;
-        SVGColor fill = new SVGColor();
-        SVGColor stroke = new SVGColor();
+        Color fill = new Color();
+        Color stroke = new Color();
         double strokeWidth = 0.0;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
@@ -222,15 +222,15 @@ public final class SVGParser {
             }
         }
 
-        return new SVGRectangle(x, y, width, height, fill, stroke, strokeWidth);
+        return new Rectangle(x, y, width, height, fill, stroke, strokeWidth);
     }
 
-    private static SVGPath parsePath(final Node node, final SVGPalette.SVGPaletteBuilder palette) {
+    private static Path parsePath(final Node node, final Palette.SVGPaletteBuilder palette) {
         if (node.getChildNodes().getLength() != 0) {
             throw new IllegalArgumentException("Weird 'path' element with more than 0 child nodes.");
         }
 
-        SVGPath path = null;
+        Path path = null;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
@@ -247,14 +247,14 @@ public final class SVGParser {
 
     /** @deprecated Use the new 'parseNumber' method. */
     @Deprecated(forRemoval = true)
-    private static SVGPathPoint parsePathPoint(final String pointData) {
+    private static Point parsePathPoint(final String pointData) {
         final int idx = pointData.indexOf(',');
-        return new SVGPathPoint(
+        return new Point(
                 Double.parseDouble(pointData.substring(0, idx)), Double.parseDouble(pointData.substring(idx + 1)));
     }
 
-    private static SVGPath parsePath(final String pathString) {
-        final List<SVGSubPath> subpaths = new ArrayList<>();
+    private static Path parsePath(final String pathString) {
+        final List<SubPath> subpaths = new ArrayList<>();
         final CharacterIterator it = new CharacterIterator(pathString);
 
         while (it.hasNext()) {
@@ -265,17 +265,17 @@ public final class SVGParser {
                 break;
             }
 
-            final SVGSubPath subpath = parseSubPath(it);
+            final SubPath subpath = parseSubPath(it);
             subpaths.add(subpath);
         }
 
-        return new SVGPath(subpaths);
+        return new Path(subpaths);
     }
 
-    private static SVGSubPath parseSubPath(final CharacterIterator it) {
+    private static SubPath parseSubPath(final CharacterIterator it) {
         // here it is assumed that it points to a non-whitespace character
 
-        final List<SVGPathElement> subPathElements = new ArrayList<>();
+        final List<PathElement> subPathElements = new ArrayList<>();
 
         if (it.current() != 'm' && it.current() != 'M') {
             throw new IllegalArgumentException(
@@ -285,7 +285,7 @@ public final class SVGParser {
         while (it.hasNext()) {
             final char curr = it.current();
 
-            final SVGPathElement elem =
+            final PathElement elem =
                     switch (curr) {
                         case 'm', 'M' -> {
                             it.move();
@@ -335,7 +335,7 @@ public final class SVGParser {
             // }
         }
 
-        return new SVGSubPath(subPathElements);
+        return new SubPath(subPathElements);
     }
 
     private static double parseNumber(final CharacterIterator it) {
@@ -351,33 +351,33 @@ public final class SVGParser {
         return Double.parseDouble(sb.toString());
     }
 
-    private static SVGPathMoveTo parseMoveTo(final CharacterIterator it, final boolean isRelative) {
+    private static PathMoveTo parseMoveTo(final CharacterIterator it, final boolean isRelative) {
         it.skipSpaces();
 
-        final List<SVGPathPoint> points = new ArrayList<>();
+        final List<Point> points = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
             final double x = parseNumber(it);
             it.skipSpacesAndCommas();
             final double y = parseNumber(it);
             it.skipSpaces();
-            points.add(new SVGPathPoint(x, y));
+            points.add(new Point(x, y));
         }
 
-        return new SVGPathMoveTo(isRelative, points);
+        return new PathMoveTo(isRelative, points);
     }
 
-    private static SVGColor parseColor(final String v) {
+    private static Color parseColor(final String v) {
         return switch (v) {
-            case "none" -> new SVGColor();
-            case "red" -> new SVGColor((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff);
-            case "blue" -> new SVGColor((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff);
+            case "none" -> new Color();
+            case "red" -> new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff);
+            case "blue" -> new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff);
             default -> {
                 if (v.charAt(0) == '#' && v.length() == 7) {
                     final byte r = ParseUtils.parseByteHex(v.substring(1, 3));
                     final byte g = ParseUtils.parseByteHex(v.substring(3, 5));
                     final byte b = ParseUtils.parseByteHex(v.substring(5, 7));
-                    yield new SVGColor(r, g, b, (byte) 0xff);
+                    yield new Color(r, g, b, (byte) 0xff);
                 }
                 throw new IllegalArgumentException(String.format("Unknown color '%s'", v));
             }

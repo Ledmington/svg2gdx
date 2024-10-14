@@ -19,6 +19,8 @@ package com.ledmington.svg;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.ledmington.svg.util.ParseUtils;
+
 /**
  * A rectangle aligned with the axis. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/shapes.html#RectElement">here</a>.
@@ -28,9 +30,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
  * @param width The width of the rectangle.
  * @param height The height of the rectangle.
  */
-record SVGRectangle(double x, double y, double width, double height, SVGColor fill, SVGColor stroke, double strokeWidth)
-        implements SVGElement {
-    public void draw(final ShapeRenderer sr, final SVGPalette palette) {
+record Rectangle(double x, double y, double width, double height, Color fill, Color stroke, double strokeWidth)
+        implements Element {
+    public void draw(final ShapeRenderer sr, final Palette palette) {
         sr.set(ShapeRenderer.ShapeType.Filled);
         sr.setColor(
                 ParseUtils.byteToFloat(fill.r()),

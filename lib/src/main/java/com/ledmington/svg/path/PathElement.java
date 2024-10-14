@@ -17,4 +17,4 @@
  */
 package com.ledmington.svg.path;
 
-public interface SVGPathElement {}
+public interface PathElement {}

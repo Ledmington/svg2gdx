@@ -21,31 +21,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+/**
+ * An SVG "lineto" command. Official documentation available <a
+ * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
+ */
+public final class LineTo implements PathElement {
 
-import com.ledmington.svg.SVGElement;
-import com.ledmington.svg.SVGPalette;
+    private final boolean isRelative;
+    private final List<Point> points;
 
-public final class SVGPath implements SVGElement {
-
-    private final List<SVGSubPath> subpaths;
-
-    public SVGPath(final List<SVGSubPath> subpaths) {
-        Objects.requireNonNull(subpaths);
-        if (subpaths.isEmpty()) {
-            throw new IllegalArgumentException("Empty list of subpaths");
+    public LineTo(final boolean isRelative, final List<Point> points) {
+        this.isRelative = isRelative;
+        Objects.requireNonNull(points);
+        if (points.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of points");
         }
-        this.subpaths = Collections.unmodifiableList(subpaths);
+        this.points = Collections.unmodifiableList(points);
     }
 
-    public void draw(final ShapeRenderer sr, final SVGPalette palette) {
-        for (final SVGSubPath subpath : subpaths) {
-            subpath.draw(sr, palette, ((SVGPathMoveTo) subpath.getElement(0)).getPoint(0));
-        }
+    public boolean isRelative() {
+        return isRelative;
     }
 
-    @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
+    public int getNumPoints() {
+        return points.size();
+    }
+
+    public Point getPoint(final int idx) {
+        return points.get(idx);
     }
 }

@@ -23,16 +23,16 @@ import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import com.ledmington.svg.path.SVGPath;
+import com.ledmington.svg.path.Path;
 
 /** A parsed SVG image. Official reference available <a href="https://www.w3.org/TR/SVG2/">here</a>. */
-public final class SVGImage implements SVGElement {
+public final class Image implements Element {
 
-    private final SVGViewBox viewBox;
+    private final ViewBox viewBox;
     private final double width;
     private final double height;
-    private final SVGPalette palette;
-    private final List<SVGElement> elements;
+    private final Palette palette;
+    private final List<Element> elements;
 
     /**
      * Creates a new SVGImage with the given data.
@@ -42,12 +42,12 @@ public final class SVGImage implements SVGElement {
      * @param palette The palette of colors to be used when rendering.
      * @param elements The inner elements of this image.
      */
-    public SVGImage(
-            final SVGViewBox viewBox,
+    public Image(
+            final ViewBox viewBox,
             final double width,
             final double height,
-            final SVGPalette palette,
-            final List<SVGElement> elements) {
+            final Palette palette,
+            final List<Element> elements) {
         this.viewBox = Objects.requireNonNull(viewBox);
         if (width < 0.0 || height < 0.0) {
             throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
@@ -66,10 +66,10 @@ public final class SVGImage implements SVGElement {
     public void draw(final ShapeRenderer sr) {
         sr.setAutoShapeType(true);
         sr.begin();
-        for (final SVGElement elem : elements) {
+        for (final Element elem : elements) {
             switch (elem) {
-                case SVGRectangle rect -> rect.draw(sr, palette);
-                case SVGPath path -> path.draw(sr, palette);
+                case Rectangle rect -> rect.draw(sr, palette);
+                case Path path -> path.draw(sr, palette);
                 default -> throw new Error(elem.toString());
             }
         }
@@ -92,7 +92,7 @@ public final class SVGImage implements SVGElement {
                 .append("float initialY = 0.0f;\n")
                 .append("sr.setAutoShapeType(true);\n")
                 .append("sr.begin();\n");
-        for (final SVGElement elem : elements) {
+        for (final Element elem : elements) {
             sb.append(elem.toGDXShapeRenderer());
         }
         sb.append("sr.end();\n}\n");
