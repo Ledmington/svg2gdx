@@ -27,6 +27,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import com.ledmington.svg.path.CubicBezier;
 import com.ledmington.svg.path.CubicBezierElement;
+import com.ledmington.svg.path.HorizontalLineTo;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
@@ -316,7 +317,7 @@ public final class Parser {
         final CharacterIterator it = new CharacterIterator(v);
         final List<Point> points = new ArrayList<>();
         it.skipSpaces();
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             points.add(parsePoint(it));
         }
         return points;
@@ -389,6 +390,10 @@ public final class Parser {
                     it.move();
                     subPathElements.add(parseLineTo(it, curr == 'l'));
                 }
+                case 'h', 'H' -> {
+                    it.move();
+                    subPathElements.add(parseHorizontalLineTo(it, curr == 'h'));
+                }
                 case 'c', 'C' -> {
                     it.move();
                     subPathElements.add(parseCubicBezier(it, curr == 'c'));
@@ -423,7 +428,7 @@ public final class Parser {
 
         final List<SmoothQuadraticBezierElement> elements = new ArrayList<>();
 
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             final Point p = parsePoint(it);
             elements.add(new SmoothQuadraticBezierElement(p));
         }
@@ -436,7 +441,7 @@ public final class Parser {
 
         final List<QuadraticBezierElement> elements = new ArrayList<>();
 
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             final Point p1 = parsePoint(it);
             final Point p = parsePoint(it);
             elements.add(new QuadraticBezierElement(p1, p));
@@ -464,7 +469,7 @@ public final class Parser {
 
         final List<CubicBezierElement> elements = new ArrayList<>();
 
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             final Point p1 = parsePoint(it);
             final Point p2 = parsePoint(it);
             final Point p = parsePoint(it);
@@ -492,7 +497,7 @@ public final class Parser {
 
         final List<Point> points = new ArrayList<>();
 
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             points.add(parsePoint(it));
         }
 
@@ -504,11 +509,24 @@ public final class Parser {
 
         final List<Point> points = new ArrayList<>();
 
-        while (it.hasNext() && Character.isDigit(it.current())) {
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
             points.add(parsePoint(it));
         }
 
         return new LineTo(isRelative, points);
+    }
+
+    private static HorizontalLineTo parseHorizontalLineTo(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<Double> x = new ArrayList<>();
+
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
+            x.add(parseNumber(it));
+            it.skipSpaces();
+        }
+
+        return new HorizontalLineTo(isRelative, x);
     }
 
     private static Color parseColor(final String v) {
