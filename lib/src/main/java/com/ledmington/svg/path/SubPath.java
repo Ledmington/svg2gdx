@@ -112,7 +112,7 @@ public final class SubPath implements Element {
                 }
                 case Bezier b -> {
                     for (int i = 0; i < b.getNumElements(); i++) {
-                        final BezierPathElement be = b.getElement(i);
+                        final BezierElement be = b.getElement(i);
                         if (b.isRelative()) {
                             sr.curve(
                                     (float) current.x(),

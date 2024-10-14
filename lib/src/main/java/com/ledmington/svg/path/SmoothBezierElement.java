@@ -17,4 +17,4 @@
  */
 package com.ledmington.svg.path;
 
-public record BezierPathElement(Point firstControlPoint, Point secondControlPoint, Point endPoint) {}
+public record SmoothBezierElement(Point secondControlPoint, Point endPoint) {}

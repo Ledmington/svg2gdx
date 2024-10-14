@@ -22,15 +22,15 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * An SVG cubic Bezier curve command ("curveto"). Official documentation available <a
- * href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
+ * An SVG cubic Bezier curve (with implicit control point) command ("smooth curveto"). Official documentation available
+ * <a href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
  */
-public final class Bezier implements PathElement {
+public final class SmoothBezier implements PathElement {
 
     private final boolean isRelative;
-    private final List<BezierElement> elements;
+    private final List<SmoothBezierElement> elements;
 
-    public Bezier(final boolean isRelative, final List<BezierElement> elements) {
+    public SmoothBezier(final boolean isRelative, final List<SmoothBezierElement> elements) {
         this.isRelative = isRelative;
         Objects.requireNonNull(elements);
         if (elements.isEmpty()) {
@@ -47,7 +47,7 @@ public final class Bezier implements PathElement {
         return elements.size();
     }
 
-    public BezierElement getElement(final int idx) {
+    public SmoothBezierElement getElement(final int idx) {
         return elements.get(idx);
     }
 }

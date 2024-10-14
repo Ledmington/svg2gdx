@@ -26,12 +26,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.ledmington.svg.path.Bezier;
-import com.ledmington.svg.path.BezierPathElement;
+import com.ledmington.svg.path.BezierElement;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
 import com.ledmington.svg.path.PathElement;
 import com.ledmington.svg.path.Point;
+import com.ledmington.svg.path.SmoothBezier;
+import com.ledmington.svg.path.SmoothBezierElement;
 import com.ledmington.svg.path.SubPath;
 import com.ledmington.util.CharacterIterator;
 import com.ledmington.util.ParseUtils;
@@ -328,6 +330,10 @@ public final class Parser {
                     it.move();
                     subPathElements.add(parseCubicBezier(it, curr == 'c'));
                 }
+                case 's', 'S' -> {
+                    it.move();
+                    subPathElements.add(parseImplicitCubicBezier(it, curr == 's'));
+                }
                 case 'z', 'Z' -> {
                     it.move();
                     return new SubPath(subPathElements);
@@ -337,22 +343,33 @@ public final class Parser {
             }
         }
 
-        throw new IllegalArgumentException("Invalid subpath: no ending 'z' or 'Z' encountered.");
+        return new SubPath(subPathElements);
+    }
+
+    private static SmoothBezier parseImplicitCubicBezier(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<SmoothBezierElement> elements = new ArrayList<>();
+
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            final Point p2 = parsePoint(it);
+            final Point p = parsePoint(it);
+            elements.add(new SmoothBezierElement(p2, p));
+        }
+
+        return new SmoothBezier(isRelative, elements);
     }
 
     private static Bezier parseCubicBezier(final CharacterIterator it, final boolean isRelative) {
         it.skipSpaces();
 
-        final List<BezierPathElement> elements = new ArrayList<>();
+        final List<BezierElement> elements = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
             final Point p1 = parsePoint(it);
-
             final Point p2 = parsePoint(it);
-
             final Point p = parsePoint(it);
-
-            elements.add(new BezierPathElement(p1, p2, p));
+            elements.add(new BezierElement(p1, p2, p));
         }
 
         return new Bezier(isRelative, elements);
