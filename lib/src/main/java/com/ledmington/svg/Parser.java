@@ -44,7 +44,6 @@ import com.ledmington.util.ParseUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /** Parser of SVG images. */
@@ -110,11 +109,13 @@ public final class Parser {
                         throw new IllegalArgumentException("Negative height value in viewBox");
                     }
                 }
-                case "xmlns", "version" -> {
+                case "preserveAspectRatio", "style" -> {
+                    // ignored for now
+                }
+                case "xmlns", "version", "contentScriptType", "contentStyleType", "xml:space", "xmlns:xlink" -> {
                     // intentionally ignored
                 }
-                default -> throw new IllegalArgumentException(
-                        String.format("Unknown attribute '%s'", x.getNodeName()));
+                default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", x.getNodeName()));
             }
         }
 
@@ -125,10 +126,13 @@ public final class Parser {
 
         final ViewBox vb = new ViewBox(viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight);
 
+        return new Image(vb, imageWidth, imageHeight, parseChildren(root));
+    }
+
+    private static List<Element> parseChildren(final Node root) {
         final List<Element> elements = new ArrayList<>();
-        final NodeList children = root.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            final Node node = children.item(i);
+        for (int i = 0; i < root.getChildNodes().getLength(); i++) {
+            final Node node = root.getChildNodes().item(i);
             switch (node.getNodeName()) {
                 case "rect":
                     elements.add(parseRectangle(node));
@@ -141,6 +145,9 @@ public final class Parser {
                     break;
                 case "circle":
                     elements.add(parseCircle(node));
+                    break;
+                case "g":
+                    elements.add(parseGroup(node));
                     break;
                 case "defs":
                 case "metadata":
@@ -157,8 +164,27 @@ public final class Parser {
                             String.format("Unknown element with name '%s'", node.getNodeName()));
             }
         }
+        return elements;
+    }
 
-        return new Image(vb, imageWidth, imageHeight, elements);
+    private static Group parseGroup(final Node node) {
+        Color fill = new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0);
+        Color stroke = new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0);
+        double strokeWidth = 0.0;
+
+        for (int i = 0; i < node.getAttributes().getLength(); i++) {
+            final Node n = node.getAttributes().item(i);
+            final String v = n.getNodeValue();
+
+            switch (n.getNodeName()) {
+                case "fill" -> fill = parseColor(v);
+                case "stroke" -> stroke = parseColor(v);
+                case "stroke-width" -> strokeWidth = Double.parseDouble(v);
+                default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
+            }
+        }
+
+        return new Group(new Style(fill, stroke, strokeWidth), parseChildren(node));
     }
 
     private static Circle parseCircle(final Node node) {
@@ -488,6 +514,7 @@ public final class Parser {
     private static Color parseColor(final String v) {
         return switch (v) {
             case "none" -> new Color();
+            case "black" -> new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0xff);
             case "red" -> new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff);
             case "blue" -> new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff);
             default -> {

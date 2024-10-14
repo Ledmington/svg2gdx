@@ -36,8 +36,12 @@ import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
 import com.ledmington.svg.path.Point;
+import com.ledmington.svg.path.QuadraticBezier;
+import com.ledmington.svg.path.QuadraticBezierElement;
 import com.ledmington.svg.path.SmoothCubicBezier;
 import com.ledmington.svg.path.SmoothCubicBezierElement;
+import com.ledmington.svg.path.SmoothQuadraticBezier;
+import com.ledmington.svg.path.SmoothQuadraticBezierElement;
 import com.ledmington.svg.path.SubPath;
 
 public final class TestImageParsing {
@@ -115,7 +119,65 @@ public final class TestImageParsing {
                                         new Circle(250.0, 100.0, 10.0),
                                         new Circle(400.0, 300.0, 10.0),
                                         new Circle(250.0, 300.0, 9.0)))),
-                Arguments.of(load.apply("quad01.svg"), null),
+                Arguments.of(
+                        load.apply("quad01.svg"),
+                        new Image(
+                                new ViewBox(0.0, 0.0, 1200.0, 600.0),
+                                453.54,
+                                226.77,
+                                List.of(
+                                        new Rectangle(
+                                                1.0,
+                                                1.0,
+                                                1198.0,
+                                                598.0,
+                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                1.0),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(200.0, 300.0))),
+                                                                new QuadraticBezier(
+                                                                        false,
+                                                                        List.of(
+                                                                                new QuadraticBezierElement(
+                                                                                        new Point(400.0, 50.0),
+                                                                                        new Point(600.0, 300.0)))),
+                                                                new SmoothQuadraticBezier(
+                                                                        false,
+                                                                        List.of(
+                                                                                new SmoothQuadraticBezierElement(
+                                                                                        new Point(1000.0, 300.0))))))),
+                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff),
+                                                5.0),
+                                        new Group(
+                                                new Style(
+                                                        new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0xff),
+                                                        new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                        0.0),
+                                                List.of(
+                                                        new Circle(200.0, 300.0, 10.0),
+                                                        new Circle(600.0, 300.0, 10.0),
+                                                        new Circle(1000.0, 300.0, 10.0))),
+                                        new Group(
+                                                new Style(
+                                                        new Color((byte) 0x88, (byte) 0x88, (byte) 0x88, (byte) 0xff),
+                                                        new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                        0.0),
+                                                List.of(new Circle(400.0, 50.0, 10.0), new Circle(800.0, 550.0, 10.0))),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(200.0, 300.0))),
+                                                                new LineTo(false, List.of(new Point(400.0, 50.0))),
+                                                                new LineTo(false, List.of(new Point(600.0, 300.0))),
+                                                                new LineTo(false, List.of(new Point(800.0, 550.0))),
+                                                                new LineTo(false, List.of(new Point(1000.0, 300.0)))))),
+                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color((byte) 0x88, (byte) 0x88, (byte) 0x88, (byte) 0xff),
+                                                2.0)))),
                 Arguments.of(load.apply("arcs01.svg"), null));
     }
 
