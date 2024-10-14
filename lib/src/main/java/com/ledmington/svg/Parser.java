@@ -116,7 +116,17 @@ public final class Parser {
                 case "preserveAspectRatio", "style" -> {
                     // ignored for now
                 }
-                case "xmlns", "version", "contentScriptType", "contentStyleType", "xml:space", "xmlns:xlink" -> {
+                case "xmlns",
+                        "version",
+                        "contentScriptType",
+                        "contentStyleType",
+                        "xml:space",
+                        "xmlns:xlink",
+                        "xmlns:cc",
+                        "xmlns:dc",
+                        "xmlns:rdf",
+                        "xmlns:svg",
+                        "id" -> {
                     // intentionally ignored
                 }
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", x.getNodeName()));
@@ -277,6 +287,9 @@ public final class Parser {
                 case "stroke-width" -> strokeWidth = parseSize(v);
                 case "class" -> {
                     // ignored for now
+                }
+                case "id" -> {
+                    // intentionally ignored
                 }
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
             }
