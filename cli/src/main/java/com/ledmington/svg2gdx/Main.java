@@ -25,7 +25,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg.Image;
 import com.ledmington.svg.Parser;
-import com.ledmington.svg.util.ParseUtils;
+import com.ledmington.util.ParseUtils;
 
 import org.openjdk.jol.info.GraphLayout;
 

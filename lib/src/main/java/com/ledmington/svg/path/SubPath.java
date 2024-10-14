@@ -24,7 +24,6 @@ import java.util.Objects;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg.Element;
-import com.ledmington.svg.Palette;
 
 /**
  * An SVG path element. Official documentation available <a
@@ -47,7 +46,7 @@ public final class SubPath implements Element {
         if (elements.isEmpty()) {
             throw new IllegalArgumentException("Empty list of path elements");
         }
-        if (!(elements.getFirst() instanceof PathMoveTo)) {
+        if (!(elements.getFirst() instanceof MoveTo)) {
             throw new IllegalArgumentException(String.format(
                     "Expected first subpath element to be a 'moveto' element but was a '%s'",
                     elements.getFirst().toString()));
@@ -74,12 +73,12 @@ public final class SubPath implements Element {
         return elements.get(idx);
     }
 
-    public void draw(final ShapeRenderer sr, final Palette palette, final Point initial) {
+    public void draw(final ShapeRenderer sr, final Point initial) {
 
         Point current = null;
         for (final PathElement e : elements) {
             switch (e) {
-                case PathMoveTo m -> {
+                case MoveTo m -> {
                     if (m.isRelative()) {
                         current = (current == null) ? new Point(0.0, 0.0).add(initial) : current.add(initial);
                     } else {
@@ -162,7 +161,7 @@ public final class SubPath implements Element {
         for (int i = 0; i < elements.size(); i++) {
             final PathElement elem = elements.get(i);
             switch (elem) {
-                case PathMoveTo m -> {
+                case MoveTo m -> {
                     i++;
                     final Point current = (Point) elements.get(i++);
                     sb.append("currentX = ")
@@ -280,5 +279,30 @@ public final class SubPath implements Element {
         sb.append("currentX = 0.0f;\ncurrentY = 0.0f;\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "SubPath(elements=" + elements + ')';
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final SubPath sp = (SubPath) other;
+        return this.elements.equals(sp.elements);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * 17 + elements.hashCode();
     }
 }

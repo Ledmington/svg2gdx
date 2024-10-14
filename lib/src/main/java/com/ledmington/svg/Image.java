@@ -24,6 +24,7 @@ import java.util.Objects;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg.path.Path;
+import com.ledmington.util.HashUtils;
 
 /** A parsed SVG image. Official reference available <a href="https://www.w3.org/TR/SVG2/">here</a>. */
 public final class Image implements Element {
@@ -31,7 +32,6 @@ public final class Image implements Element {
     private final ViewBox viewBox;
     private final double width;
     private final double height;
-    private final Palette palette;
     private final List<Element> elements;
 
     /**
@@ -39,22 +39,15 @@ public final class Image implements Element {
      *
      * @param width The width of the image.
      * @param height The height of the image.
-     * @param palette The palette of colors to be used when rendering.
      * @param elements The inner elements of this image.
      */
-    public Image(
-            final ViewBox viewBox,
-            final double width,
-            final double height,
-            final Palette palette,
-            final List<Element> elements) {
+    public Image(final ViewBox viewBox, final double width, final double height, final List<Element> elements) {
         this.viewBox = Objects.requireNonNull(viewBox);
         if (width < 0.0 || height < 0.0) {
             throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
         }
         this.width = width;
         this.height = height;
-        this.palette = Objects.requireNonNull(palette);
         this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
     }
 
@@ -68,8 +61,8 @@ public final class Image implements Element {
         sr.begin();
         for (final Element elem : elements) {
             switch (elem) {
-                case Rectangle rect -> rect.draw(sr, palette);
-                case Path path -> path.draw(sr, palette);
+                case Rectangle rect -> rect.draw(sr);
+                case Path path -> path.draw(sr);
                 default -> throw new Error(elem.toString());
             }
         }
@@ -84,7 +77,6 @@ public final class Image implements Element {
                 .append('\n')
                 .append(String.format("final double height = %s;", height))
                 .append('\n')
-                .append(palette.toGDXShapeRenderer())
                 .append("final ShapeRenderer sr = @Place here your ShapeRenderer@;\n")
                 .append("float currentX = 0.0f;\n")
                 .append("float currentY = 0.0f;\n")
@@ -97,5 +89,38 @@ public final class Image implements Element {
         }
         sb.append("sr.end();\n}\n");
         return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Image(viewBox=" + viewBox + ";width=" + width + ";height=" + height + ";elements=" + elements + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + viewBox.hashCode();
+        h = 31 * h + HashUtils.hash(width);
+        h = 31 * h + HashUtils.hash(height);
+        h = 31 * h + elements.hashCode();
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final Image img = (Image) other;
+        return this.viewBox.equals(img.viewBox)
+                && this.width == img.width
+                && this.height == img.height
+                && this.elements.equals(img.elements);
     }
 }

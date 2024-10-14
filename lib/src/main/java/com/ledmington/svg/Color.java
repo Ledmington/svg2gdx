@@ -17,7 +17,7 @@
  */
 package com.ledmington.svg;
 
-import com.ledmington.svg.util.ParseUtils;
+import com.ledmington.util.ParseUtils;
 
 /**
  * An RGBA color.

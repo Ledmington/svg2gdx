@@ -23,29 +23,69 @@ import java.util.Objects;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.ledmington.svg.Color;
 import com.ledmington.svg.Element;
-import com.ledmington.svg.Palette;
+import com.ledmington.util.HashUtils;
 
 public final class Path implements Element {
 
     private final List<SubPath> subpaths;
+    private final Color fill;
+    private final Color stroke;
+    private final double strokeWidth;
 
-    public Path(final List<SubPath> subpaths) {
+    public Path(final List<SubPath> subpaths, final Color fill, final Color stroke, final double strokeWidth) {
         Objects.requireNonNull(subpaths);
         if (subpaths.isEmpty()) {
             throw new IllegalArgumentException("Empty list of subpaths");
         }
         this.subpaths = Collections.unmodifiableList(subpaths);
+        this.fill = Objects.requireNonNull(fill);
+        this.stroke = Objects.requireNonNull(stroke);
+        this.strokeWidth = strokeWidth;
     }
 
-    public void draw(final ShapeRenderer sr, final Palette palette) {
+    public void draw(final ShapeRenderer sr) {
         for (final SubPath subpath : subpaths) {
-            subpath.draw(sr, palette, ((PathMoveTo) subpath.getElement(0)).getPoint(0));
+            subpath.draw(sr, ((MoveTo) subpath.getElement(0)).getPoint(0));
         }
     }
 
     @Override
     public String toGDXShapeRenderer() {
         throw new Error("Not implemented");
+    }
+
+    @Override
+    public String toString() {
+        return "Path(subpaths=" + subpaths + ";fill=" + fill + ";stroke=" + stroke + ";stokeWidth=" + strokeWidth + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + subpaths.hashCode();
+        h = 31 * h + fill.hashCode();
+        h = 31 * h + stroke.hashCode();
+        h = 31 * h + HashUtils.hash(strokeWidth);
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final Path p = (Path) other;
+        return this.subpaths.equals(p.subpaths)
+                && this.fill.equals(p.fill)
+                && this.stroke.equals(p.stroke)
+                && this.strokeWidth == p.strokeWidth;
     }
 }

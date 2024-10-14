@@ -21,11 +21,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.ledmington.util.HashUtils;
+
 /**
  * The SVG path element relative to 'moveto' commands. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathDataMovetoCommands">here</a>.
  */
-public final class PathMoveTo implements PathElement {
+public final class MoveTo implements PathElement {
 
     private final boolean isRelative;
     private final List<Point> points;
@@ -36,7 +38,7 @@ public final class PathMoveTo implements PathElement {
      * @param isRelative True if this element is relative, false if it is absolute.
      * @param points The non-empty list of points of this element.
      */
-    public PathMoveTo(final boolean isRelative, final List<Point> points) {
+    public MoveTo(final boolean isRelative, final List<Point> points) {
         this.isRelative = isRelative;
         Objects.requireNonNull(points);
         if (points.isEmpty()) {
@@ -75,6 +77,29 @@ public final class PathMoveTo implements PathElement {
 
     @Override
     public String toString() {
-        return "SVGPathMoveTo(isRelative=" + isRelative + ";points=" + points + ")";
+        return "MoveTo(isRelative=" + isRelative + ";points=" + points + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + HashUtils.hash(isRelative);
+        h = 31 * h + points.hashCode();
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final MoveTo mt = (MoveTo) other;
+        return this.isRelative == mt.isRelative && this.points.equals(mt.points);
     }
 }

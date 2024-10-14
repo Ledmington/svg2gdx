@@ -19,7 +19,7 @@ package com.ledmington.svg;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-import com.ledmington.svg.util.ParseUtils;
+import com.ledmington.util.ParseUtils;
 
 /**
  * A rectangle aligned with the axis. Official documentation available <a
@@ -32,7 +32,7 @@ import com.ledmington.svg.util.ParseUtils;
  */
 record Rectangle(double x, double y, double width, double height, Color fill, Color stroke, double strokeWidth)
         implements Element {
-    public void draw(final ShapeRenderer sr, final Palette palette) {
+    public void draw(final ShapeRenderer sr) {
         sr.set(ShapeRenderer.ShapeType.Filled);
         sr.setColor(
                 ParseUtils.byteToFloat(fill.r()),

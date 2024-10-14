@@ -27,13 +27,14 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.ledmington.svg.path.LineTo;
+import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
 import com.ledmington.svg.path.PathElement;
-import com.ledmington.svg.path.PathMoveTo;
 import com.ledmington.svg.path.Point;
 import com.ledmington.svg.path.SubPath;
-import com.ledmington.svg.util.CharacterIterator;
-import com.ledmington.svg.util.ParseUtils;
+import com.ledmington.util.CharacterIterator;
+import com.ledmington.util.ParseUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -117,18 +118,16 @@ public final class Parser {
 
         final ViewBox vb = new ViewBox(viewBoxX, viewBoxY, viewBoxWidth, viewBoxHeight);
 
-        final Palette.SVGPaletteBuilder palette = Palette.builder();
-
         final List<Element> elements = new ArrayList<>();
         final NodeList children = root.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             final Node node = children.item(i);
             switch (node.getNodeName()) {
                 case "rect":
-                    elements.add(parseRectangle(node, palette));
+                    elements.add(parseRectangle(node));
                     break;
                 case "path":
-                    elements.add(parsePath(node, palette));
+                    elements.add(parsePath(node));
                     break;
                 case "defs":
                 case "metadata":
@@ -143,7 +142,7 @@ public final class Parser {
             }
         }
 
-        return new Image(vb, imageWidth, imageHeight, palette.build(), elements);
+        return new Image(vb, imageWidth, imageHeight, elements);
     }
 
     private static double parseSize(final String input) {
@@ -193,7 +192,7 @@ public final class Parser {
         return m;
     }
 
-    private static Rectangle parseRectangle(final Node node, final Palette.SVGPaletteBuilder palette) {
+    private static Rectangle parseRectangle(final Node node) {
         if (node.getChildNodes().getLength() != 0) {
             throw new IllegalArgumentException("Weird 'rect' element with more than 0 child nodes.");
         }
@@ -225,51 +224,46 @@ public final class Parser {
         return new Rectangle(x, y, width, height, fill, stroke, strokeWidth);
     }
 
-    private static Path parsePath(final Node node, final Palette.SVGPaletteBuilder palette) {
+    private static Path parsePath(final Node node) {
         if (node.getChildNodes().getLength() != 0) {
             throw new IllegalArgumentException("Weird 'path' element with more than 0 child nodes.");
         }
 
-        Path path = null;
+        List<SubPath> subpaths = null;
+        Color fill = new Color();
+        Color stroke = new Color();
+        double strokeWidth = 0.0;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
             final String v = n.getNodeValue();
 
             switch (n.getNodeName()) {
-                case "d" -> path = parsePath(v);
+                case "d" -> subpaths = parsePath(v);
+                case "fill" -> fill = parseColor(v);
+                case "stroke" -> stroke = parseColor(v);
+                case "stroke-width" -> strokeWidth = parseSize(v);
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
             }
         }
 
-        return null;
+        return new Path(subpaths, fill, stroke, strokeWidth);
     }
 
-    /** @deprecated Use the new 'parseNumber' method. */
-    @Deprecated(forRemoval = true)
-    private static Point parsePathPoint(final String pointData) {
-        final int idx = pointData.indexOf(',');
-        return new Point(
-                Double.parseDouble(pointData.substring(0, idx)), Double.parseDouble(pointData.substring(idx + 1)));
-    }
-
-    private static Path parsePath(final String pathString) {
+    private static List<SubPath> parsePath(final String pathString) {
         final List<SubPath> subpaths = new ArrayList<>();
         final CharacterIterator it = new CharacterIterator(pathString);
 
         while (it.hasNext()) {
-
             it.skipSpaces();
-
             if (!it.hasNext()) {
                 break;
             }
-
             final SubPath subpath = parseSubPath(it);
             subpaths.add(subpath);
         }
 
-        return new Path(subpaths);
+        return subpaths;
     }
 
     private static SubPath parseSubPath(final CharacterIterator it) {
@@ -285,26 +279,23 @@ public final class Parser {
         while (it.hasNext()) {
             final char curr = it.current();
 
-            final PathElement elem =
-                    switch (curr) {
-                        case 'm', 'M' -> {
-                            it.move();
-                            yield parseMoveTo(it, curr == 'm');
-                        }
-                        default -> throw new IllegalArgumentException(
-                                String.format("Unexpected character in path '%c' (U+%04x)", curr, (int) curr));
-                    };
+            switch (curr) {
+                case 'm', 'M' -> {
+                    it.move();
+                    subPathElements.add(parseMoveTo(it, curr == 'm'));
+                }
+                case 'l', 'L' -> {
+                    it.move();
+                    subPathElements.add(parseLineTo(it, curr == 'l'));
+                }
+                case 'z', 'Z' -> {
+                    it.move();
+                    return new SubPath(subPathElements);
+                }
+                default -> throw new IllegalArgumentException(
+                        String.format("Unexpected character in path '%c' (U+%04x)", curr, (int) curr));
+            }
 
-            subPathElements.add(elem);
-
-            // if (elem.equals("m") || elem.equals("M")) {
-            // // Relative/Absolute "moveto" command
-            // final boolean isRelative = elem.equals("m");
-            // final List<SVGPathPoint> points = new ArrayList<>();
-            // for (; i + 1 < pathData.length && pathData[i + 1].indexOf(',') != -1; i++) {
-            // points.add(parsePathPoint(pathData[i + 1]));
-            // }
-            // subPathElements.add(new SVGPathMoveTo(isRelative, points));
             // } else if (elem.equals("c") || elem.equals("C")) {
             // // Relative/Absolute "Bezier" command
             // final boolean isRelative = elem.equals("c");
@@ -317,25 +308,9 @@ public final class Parser {
             // parsePathPoint(pathData[i + 3])));
             // }
             // subPathElements.add(new SVGPathBezier(isRelative, elements));
-            // } else if (elem.equals("l") || elem.equals("L")) {
-            // // Relative/Absolute "lineto" command
-            // final boolean isRelative = elem.equals("l");
-            // final List<SVGPathPoint> points = new ArrayList<>();
-            // for (; i + 1 < pathData.length && pathData[i + 1].indexOf(',') != -1; i++) {
-            // points.add(parsePathPoint(pathData[i + 1]));
-            // }
-            // subPathElements.add(new SVGPathLineto(isRelative, points));
-            // } else if (elem.equals("z") || elem.equals("Z")) {
-            // // "closepath" commands
-            // // reference: https://www.w3.org/TR/SVG2/paths.html#PathDataClosePathCommand
-            // break;
-            // } else {
-            // throw new IllegalArgumentException(String.format("Unknown subpath element
-            // '%s'", elem));
-            // }
         }
 
-        return new SubPath(subPathElements);
+        throw new IllegalArgumentException("Invalid subpath: no ending 'z' or 'Z' encountered.");
     }
 
     private static double parseNumber(final CharacterIterator it) {
@@ -351,7 +326,7 @@ public final class Parser {
         return Double.parseDouble(sb.toString());
     }
 
-    private static PathMoveTo parseMoveTo(final CharacterIterator it, final boolean isRelative) {
+    private static MoveTo parseMoveTo(final CharacterIterator it, final boolean isRelative) {
         it.skipSpaces();
 
         final List<Point> points = new ArrayList<>();
@@ -364,7 +339,23 @@ public final class Parser {
             points.add(new Point(x, y));
         }
 
-        return new PathMoveTo(isRelative, points);
+        return new MoveTo(isRelative, points);
+    }
+
+    private static LineTo parseLineTo(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<Point> points = new ArrayList<>();
+
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            final double x = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double y = parseNumber(it);
+            it.skipSpaces();
+            points.add(new Point(x, y));
+        }
+
+        return new LineTo(isRelative, points);
     }
 
     private static Color parseColor(final String v) {

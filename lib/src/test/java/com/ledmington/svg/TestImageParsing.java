@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -28,6 +29,12 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import com.ledmington.svg.path.LineTo;
+import com.ledmington.svg.path.MoveTo;
+import com.ledmington.svg.path.Path;
+import com.ledmington.svg.path.Point;
+import com.ledmington.svg.path.SubPath;
 
 public final class TestImageParsing {
 
@@ -41,7 +48,30 @@ public final class TestImageParsing {
             }
         };
         return Stream.of(
-                Arguments.of(load.apply("triangle01.svg"), null),
+                Arguments.of(
+                        load.apply("triangle01.svg"),
+                        new Image(
+                                new ViewBox(0.0, 0.0, 400.0, 400.0),
+                                151.18,
+                                151.18,
+                                List.of(
+                                        new Rectangle(
+                                                1.0,
+                                                1.0,
+                                                398.0,
+                                                398.0,
+                                                new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                0.0),
+                                        new Path(
+                                                List.of(new SubPath(
+                                                        List.of(
+                                                                new MoveTo(false, List.of(new Point(100.0, 100.0))),
+                                                                new LineTo(false, List.of(new Point(300.0, 100.0))),
+                                                                new LineTo(false, List.of(new Point(200.0, 300.0)))))),
+                                                new Color((byte) 0xff, (byte) 0, (byte) 0, (byte) 0xff),
+                                                new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
+                                                3.0)))),
                 Arguments.of(load.apply("cubic01.svg"), null),
                 Arguments.of(load.apply("quad01.svg"), null),
                 Arguments.of(load.apply("arcs01.svg"), null));
@@ -50,6 +80,7 @@ public final class TestImageParsing {
     @ParameterizedTest
     @MethodSource("testSVGFiles")
     void testParsing(final File image, final Image expected) {
-        assertEquals(expected, Parser.parseImage(image));
+        final Image actual = Parser.parseImage(image);
+        assertEquals(expected, actual, () -> String.format("Expected '%s' but was '%s'.", expected, actual));
     }
 }

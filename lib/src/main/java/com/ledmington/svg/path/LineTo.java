@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.ledmington.util.HashUtils;
+
 /**
  * An SVG "lineto" command. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/paths.html#PathDataLinetoCommands">here</a>.
@@ -49,5 +51,33 @@ public final class LineTo implements PathElement {
 
     public Point getPoint(final int idx) {
         return points.get(idx);
+    }
+
+    @Override
+    public String toString() {
+        return "LineTo(isRelative=" + isRelative + ";points=" + points + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + HashUtils.hash(isRelative);
+        h = 31 * h + points.hashCode();
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final LineTo lt = (LineTo) other;
+        return this.isRelative == lt.isRelative && this.points.equals(lt.points);
     }
 }
