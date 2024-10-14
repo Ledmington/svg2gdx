@@ -134,10 +134,14 @@ public final class Parser {
                 case "polyline":
                     elements.add(parsePolyline(node));
                     break;
+                case "circle":
+                    elements.add(parseCircle(node));
+                    break;
                 case "defs":
                 case "metadata":
                 case "#text":
                 case "style": // ignored for now
+                case "text": // ignored for now
                 case "title":
                 case "desc":
                     // we don't care about these
@@ -149,6 +153,33 @@ public final class Parser {
         }
 
         return new Image(vb, imageWidth, imageHeight, elements);
+    }
+
+    private static Circle parseCircle(final Node node) {
+        if (node.getChildNodes().getLength() != 0) {
+            throw new IllegalArgumentException("Weird 'circle' element with more than 0 child nodes.");
+        }
+
+        double cx = 0.0;
+        double cy = 0.0;
+        double r = 0.0;
+
+        for (int i = 0; i < node.getAttributes().getLength(); i++) {
+            final Node n = node.getAttributes().item(i);
+            final String v = n.getNodeValue();
+
+            switch (n.getNodeName()) {
+                case "cx" -> cx = Double.parseDouble(v);
+                case "cy" -> cy = Double.parseDouble(v);
+                case "r" -> r = Double.parseDouble(v);
+                case "class" -> {
+                    // ignored for now
+                }
+                default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
+            }
+        }
+
+        return new Circle(cx, cy, r);
     }
 
     private static double parseSize(final String input) {
