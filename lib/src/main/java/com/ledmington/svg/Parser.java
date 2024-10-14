@@ -25,6 +25,8 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.ledmington.svg.path.Arc;
+import com.ledmington.svg.path.ArcElement;
 import com.ledmington.svg.path.CubicBezier;
 import com.ledmington.svg.path.CubicBezierElement;
 import com.ledmington.svg.path.HorizontalLineTo;
@@ -410,6 +412,10 @@ public final class Parser {
                     it.move();
                     subPathElements.add(parseSmoothQuadraticBezier(it, curr == 't'));
                 }
+                case 'a', 'A' -> {
+                    it.move();
+                    subPathElements.add(parseArc(it, curr == 'a'));
+                }
                 case 'z', 'Z' -> {
                     it.move();
                     return new SubPath(subPathElements);
@@ -420,6 +426,32 @@ public final class Parser {
         }
 
         return new SubPath(subPathElements);
+    }
+
+    private static Arc parseArc(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<ArcElement> elements = new ArrayList<>();
+
+        while (it.hasNext() && (Character.isDigit(it.current()) || it.current() == '+' || it.current() == '-')) {
+            final double rx = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double ry = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double xAxisRotation = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double largeArcFlag = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double sweepFlag = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double x = parseNumber(it);
+            it.skipSpacesAndCommas();
+            final double y = parseNumber(it);
+            it.skipSpacesAndCommas();
+            elements.add(new ArcElement(rx, ry, xAxisRotation, largeArcFlag, sweepFlag, x, y));
+        }
+
+        return new Arc(isRelative, elements);
     }
 
     private static SmoothQuadraticBezier parseSmoothQuadraticBezier(

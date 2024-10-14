@@ -17,4 +17,6 @@
  */
 package com.ledmington.svg.path;
 
-public interface PathElement {}
+public interface PathElement {
+    boolean isRelative();
+}

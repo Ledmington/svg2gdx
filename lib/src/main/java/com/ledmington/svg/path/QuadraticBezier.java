@@ -41,6 +41,7 @@ public final class QuadraticBezier implements PathElement {
         this.elements = Collections.unmodifiableList(elements);
     }
 
+    @Override
     public boolean isRelative() {
         return isRelative;
     }

@@ -41,6 +41,7 @@ public final class LineTo implements PathElement {
         this.points = Collections.unmodifiableList(points);
     }
 
+    @Override
     public boolean isRelative() {
         return isRelative;
     }

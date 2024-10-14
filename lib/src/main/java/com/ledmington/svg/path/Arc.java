@@ -17,21 +17,26 @@
  */
 package com.ledmington.svg.path;
 
-/**
- * A point in an SVG path element.
- *
- * @param x The x coordinate.
- * @param y The y coordinate.
- */
-public record Point(double x, double y) {
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-    /**
-     * Adds the coordinates of the given point to this point and returns a new instance.
-     *
-     * @param p The point to be added.
-     * @return A new point with the new coordinates.
-     */
-    public Point add(final Point p) {
-        return new Point(this.x + p.x, this.y + p.y);
+public final class Arc implements PathElement {
+
+    private final boolean isRelative;
+    private final List<ArcElement> elements;
+
+    public Arc(final boolean isRelative, final List<ArcElement> elements) {
+        this.isRelative = isRelative;
+        Objects.requireNonNull(elements);
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Empty list of elements");
+        }
+        this.elements = Collections.unmodifiableList(elements);
+    }
+
+    @Override
+    public boolean isRelative() {
+        return isRelative;
     }
 }

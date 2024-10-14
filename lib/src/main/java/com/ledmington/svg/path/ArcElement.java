@@ -17,21 +17,5 @@
  */
 package com.ledmington.svg.path;
 
-/**
- * A point in an SVG path element.
- *
- * @param x The x coordinate.
- * @param y The y coordinate.
- */
-public record Point(double x, double y) {
-
-    /**
-     * Adds the coordinates of the given point to this point and returns a new instance.
-     *
-     * @param p The point to be added.
-     * @return A new point with the new coordinates.
-     */
-    public Point add(final Point p) {
-        return new Point(this.x + p.x, this.y + p.y);
-    }
-}
+public record ArcElement(
+        double rx, double ry, double xAxisRotation, double largeArcFlag, double sweepFlag, double x, double y) {}
