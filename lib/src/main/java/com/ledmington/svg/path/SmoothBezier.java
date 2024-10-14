@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import com.ledmington.util.HashUtils;
+
 /**
  * An SVG cubic Bezier curve (with implicit control point) command ("smooth curveto"). Official documentation available
  * <a href="https://www.w3.org/TR/SVG2/paths.html#PathDataCubicBezierCommands">here</a>.
@@ -49,5 +51,33 @@ public final class SmoothBezier implements PathElement {
 
     public SmoothBezierElement getElement(final int idx) {
         return elements.get(idx);
+    }
+
+    @Override
+    public String toString() {
+        return "SmoothBezier(isRelative=" + isRelative + ";elements=" + elements + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + HashUtils.hash(isRelative);
+        h = 31 * h + elements.hashCode();
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final SmoothBezier sb = (SmoothBezier) other;
+        return this.isRelative == sb.isRelative && this.elements.equals(sb.elements);
     }
 }

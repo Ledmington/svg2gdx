@@ -43,4 +43,31 @@ public final class Polyline implements Element {
     public String toGDXShapeRenderer() {
         throw new Error("Not implemented");
     }
+
+    @Override
+    public String toString() {
+        return "Polyline(points=" + points + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 17;
+        h = 31 * h + points.hashCode();
+        return h;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (this == other) {
+            return true;
+        }
+        if (!this.getClass().equals(other.getClass())) {
+            return false;
+        }
+        final Polyline pl = (Polyline) other;
+        return this.points.equals(pl.points);
+    }
 }
