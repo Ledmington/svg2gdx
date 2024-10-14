@@ -20,13 +20,13 @@ package com.ledmington.svg;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.ledmington.svg.path.Bezier;
+import com.ledmington.svg.path.BezierPathElement;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
@@ -129,9 +129,13 @@ public final class Parser {
                 case "path":
                     elements.add(parsePath(node));
                     break;
+                case "polyline":
+                    elements.add(parsePolyline(node));
+                    break;
                 case "defs":
                 case "metadata":
                 case "#text":
+                case "style": // ignored for now
                 case "title":
                 case "desc":
                     // we don't care about these
@@ -177,21 +181,6 @@ public final class Parser {
         }
     }
 
-    private static Map<String, String> parseStyle(final String style) {
-        final Map<String, String> m = new HashMap<>();
-        final String[] styles = style.split(";");
-        for (final String s : styles) {
-            final int idx = s.indexOf(':');
-            final String key = s.substring(0, idx);
-            switch (key) {
-                case "fill", "fill-opacity", "stroke", "display" -> {}
-                default -> throw new IllegalArgumentException(String.format("Unknown style element '%s'", key));
-            }
-            m.put(key, s.substring(idx + 1));
-        }
-        return m;
-    }
-
     private static Rectangle parseRectangle(final Node node) {
         if (node.getChildNodes().getLength() != 0) {
             throw new IllegalArgumentException("Weird 'rect' element with more than 0 child nodes.");
@@ -217,11 +206,55 @@ public final class Parser {
                 case "fill" -> fill = parseColor(v);
                 case "stroke" -> stroke = parseColor(v);
                 case "stroke-width" -> strokeWidth = parseSize(v);
+                case "class" -> {
+                    // ignored for now
+                }
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
             }
         }
 
         return new Rectangle(x, y, width, height, fill, stroke, strokeWidth);
+    }
+
+    private static Polyline parsePolyline(final Node node) {
+        if (node.getChildNodes().getLength() != 0) {
+            throw new IllegalArgumentException("Weird 'polyline' element with more than 0 child nodes.");
+        }
+
+        List<Point> points = null;
+
+        for (int i = 0; i < node.getAttributes().getLength(); i++) {
+            final Node n = node.getAttributes().item(i);
+            final String v = n.getNodeValue();
+
+            switch (n.getNodeName()) {
+                case "points" -> points = parsePoints(v);
+                case "class" -> {
+                    // ignored for now
+                }
+                default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
+            }
+        }
+
+        return new Polyline(points);
+    }
+
+    private static Point parsePoint(final CharacterIterator it) {
+        final double x = parseNumber(it);
+        it.skipSpacesAndCommas();
+        final double y = parseNumber(it);
+        it.skipSpaces();
+        return new Point(x, y);
+    }
+
+    private static List<Point> parsePoints(final String v) {
+        final CharacterIterator it = new CharacterIterator(v);
+        final List<Point> points = new ArrayList<>();
+        it.skipSpaces();
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            points.add(parsePoint(it));
+        }
+        return points;
     }
 
     private static Path parsePath(final Node node) {
@@ -243,6 +276,9 @@ public final class Parser {
                 case "fill" -> fill = parseColor(v);
                 case "stroke" -> stroke = parseColor(v);
                 case "stroke-width" -> strokeWidth = parseSize(v);
+                case "class" -> {
+                    // ignored for now
+                }
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
             }
         }
@@ -288,6 +324,10 @@ public final class Parser {
                     it.move();
                     subPathElements.add(parseLineTo(it, curr == 'l'));
                 }
+                case 'c', 'C' -> {
+                    it.move();
+                    subPathElements.add(parseCubicBezier(it, curr == 'c'));
+                }
                 case 'z', 'Z' -> {
                     it.move();
                     return new SubPath(subPathElements);
@@ -295,22 +335,27 @@ public final class Parser {
                 default -> throw new IllegalArgumentException(
                         String.format("Unexpected character in path '%c' (U+%04x)", curr, (int) curr));
             }
-
-            // } else if (elem.equals("c") || elem.equals("C")) {
-            // // Relative/Absolute "Bezier" command
-            // final boolean isRelative = elem.equals("c");
-            // final List<SVGPathBezierElement> elements = new ArrayList<>();
-            // for (; i + 3 < pathData.length && pathData[i + 1].indexOf(',') != -1; i += 3)
-            // {
-            // elements.add(new SVGPathBezierElement(
-            // parsePathPoint(pathData[i + 1]),
-            // parsePathPoint(pathData[i + 2]),
-            // parsePathPoint(pathData[i + 3])));
-            // }
-            // subPathElements.add(new SVGPathBezier(isRelative, elements));
         }
 
         throw new IllegalArgumentException("Invalid subpath: no ending 'z' or 'Z' encountered.");
+    }
+
+    private static Bezier parseCubicBezier(final CharacterIterator it, final boolean isRelative) {
+        it.skipSpaces();
+
+        final List<BezierPathElement> elements = new ArrayList<>();
+
+        while (it.hasNext() && Character.isDigit(it.current())) {
+            final Point p1 = parsePoint(it);
+
+            final Point p2 = parsePoint(it);
+
+            final Point p = parsePoint(it);
+
+            elements.add(new BezierPathElement(p1, p2, p));
+        }
+
+        return new Bezier(isRelative, elements);
     }
 
     private static double parseNumber(final CharacterIterator it) {
@@ -332,11 +377,7 @@ public final class Parser {
         final List<Point> points = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
-            final double x = parseNumber(it);
-            it.skipSpacesAndCommas();
-            final double y = parseNumber(it);
-            it.skipSpaces();
-            points.add(new Point(x, y));
+            points.add(parsePoint(it));
         }
 
         return new MoveTo(isRelative, points);
@@ -348,11 +389,7 @@ public final class Parser {
         final List<Point> points = new ArrayList<>();
 
         while (it.hasNext() && Character.isDigit(it.current())) {
-            final double x = parseNumber(it);
-            it.skipSpacesAndCommas();
-            final double y = parseNumber(it);
-            it.skipSpaces();
-            points.add(new Point(x, y));
+            points.add(parsePoint(it));
         }
 
         return new LineTo(isRelative, points);
