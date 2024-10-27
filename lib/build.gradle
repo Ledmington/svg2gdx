@@ -4,7 +4,7 @@ plugins {
 	id 'me.champeau.jmh' version '0.7.2'
 }
 
-final String gdxVersion = '1.12.1'
+final String gdxVersion = '1.13.0'
 dependencies {
 	// libGDX
 	implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"

@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'pmd'
-    id 'com.github.spotbugs' version '6.0.23'
+    id 'com.github.spotbugs' version '6.0.25'
     id 'com.adarshr.test-logger' version '4.0.0'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'com.github.ben-manes.versions' version '0.51.0'
@@ -22,7 +22,7 @@ ext.appNameLowerCase = appName.toLowerCase(Locale.US)
 String author = 'Filippo Barbari'
 String authorMail = 'filippo.barbari@gmail.com'
 
-ext.junitVersion = '5.11.2'
+ext.junitVersion = '5.11.3'
 // End tunables
 
 allprojects {
