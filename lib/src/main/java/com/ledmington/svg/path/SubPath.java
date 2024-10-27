@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
 import com.ledmington.svg.Element;
 
 /**
@@ -30,9 +28,6 @@ import com.ledmington.svg.Element;
  * href="https://www.w3.org/TR/SVG2/paths.html#PathData">here</a>.
  */
 public final class SubPath implements Element {
-
-    // TODO: make modifiable by the user
-    private static final int DEFAULT_CURVE_SEGMENTS = 50;
 
     private final List<PathElement> elements;
 
@@ -71,85 +66,6 @@ public final class SubPath implements Element {
      */
     public PathElement getElement(final int idx) {
         return elements.get(idx);
-    }
-
-    public void draw(final ShapeRenderer sr, final Point initial) {
-
-        Point current = null;
-        for (final PathElement e : elements) {
-            switch (e) {
-                case MoveTo m -> {
-                    if (m.isRelative()) {
-                        current = (current == null) ? new Point(0.0, 0.0).add(initial) : current.add(initial);
-                    } else {
-                        current = initial;
-                    }
-
-                    for (int i = 0; i < m.getNumPoints(); i++) {
-                        final Point next = m.getPoint(i);
-                        if (m.isRelative()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
-                                    (current.y() + next.y()));
-                            current = current.add(next);
-                        } else {
-                            sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
-                            current = next;
-                        }
-                    }
-                }
-                case LineTo l -> {
-                    for (int j = 0; j < l.getNumPoints(); j++) {
-                        final Point p = l.getPoint(j);
-                        if (l.isRelative()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + p.x()), (float)
-                                    (current.y() + p.y()));
-                            current = current.add(p);
-                        } else {
-                            sr.line((float) current.x(), (float) current.y(), (float) p.x(), (float) p.y());
-                            current = p;
-                        }
-                    }
-                }
-                case CubicBezier b -> {
-                    for (int i = 0; i < b.getNumElements(); i++) {
-                        final CubicBezierElement be = b.getElement(i);
-                        if (b.isRelative()) {
-                            sr.curve(
-                                    (float) current.x(),
-                                    (float) current.y(),
-                                    (float) (current.x()
-                                            + be.firstControlPoint().x()),
-                                    (float) (current.y()
-                                            + be.firstControlPoint().y()),
-                                    (float) (current.x()
-                                            + be.secondControlPoint().x()),
-                                    (float) (current.y()
-                                            + be.secondControlPoint().y()),
-                                    (float) (current.x() + be.endPoint().x()),
-                                    (float) (current.y() + be.endPoint().y()),
-                                    DEFAULT_CURVE_SEGMENTS);
-                            current = current.add(be.endPoint());
-                        } else {
-                            sr.curve(
-                                    (float) current.x(),
-                                    (float) current.y(),
-                                    (float) be.firstControlPoint().x(),
-                                    (float) be.firstControlPoint().y(),
-                                    (float) be.secondControlPoint().x(),
-                                    (float) be.secondControlPoint().y(),
-                                    (float) be.endPoint().x(),
-                                    (float) be.endPoint().y(),
-                                    DEFAULT_CURVE_SEGMENTS);
-                            current = be.endPoint();
-                        }
-                    }
-                }
-                default -> throw new IllegalArgumentException(String.format("Unknown SVG path element type '%s'", e));
-            }
-        }
-
-        // close the path
-        sr.line((float) current.x(), (float) current.y(), (float) initial.x(), (float) initial.y());
     }
 
     @Override

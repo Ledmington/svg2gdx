@@ -385,7 +385,7 @@ public final class Parser {
     }
 
     private static SubPath parseSubPath(final CharacterIterator it) {
-        // here it is assumed that it points to a non-whitespace character
+        // here it is assumed that 'it' points to a non-whitespace character
 
         final List<PathElement> subPathElements = new ArrayList<>();
 

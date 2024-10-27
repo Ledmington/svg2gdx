@@ -17,10 +17,6 @@
  */
 package com.ledmington.svg;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
-import com.ledmington.util.ParseUtils;
-
 /**
  * A rectangle aligned with the axis. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/shapes.html#RectElement">here</a>.
@@ -30,26 +26,8 @@ import com.ledmington.util.ParseUtils;
  * @param width The width of the rectangle.
  * @param height The height of the rectangle.
  */
-record Rectangle(double x, double y, double width, double height, Color fill, Color stroke, double strokeWidth)
+public record Rectangle(double x, double y, double width, double height, Color fill, Color stroke, double strokeWidth)
         implements Element {
-    public void draw(final ShapeRenderer sr) {
-        sr.set(ShapeRenderer.ShapeType.Filled);
-        sr.setColor(
-                ParseUtils.byteToFloat(fill.r()),
-                ParseUtils.byteToFloat(fill.g()),
-                ParseUtils.byteToFloat(fill.b()),
-                ParseUtils.byteToFloat(fill.a()));
-        sr.rect((float) x, (float) y, (float) width, (float) height);
-
-        sr.set(ShapeRenderer.ShapeType.Line);
-        sr.setColor(
-                ParseUtils.byteToFloat(stroke.r()),
-                ParseUtils.byteToFloat(stroke.g()),
-                ParseUtils.byteToFloat(stroke.b()),
-                ParseUtils.byteToFloat(stroke.a()));
-        sr.rect((float) x, (float) y, (float) width, (float) height);
-    }
-
     @Override
     public String toGDXShapeRenderer() {
         // return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"

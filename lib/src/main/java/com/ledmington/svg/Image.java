@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
-import com.ledmington.svg.path.Path;
 import com.ledmington.util.HashUtils;
 
 /** A parsed SVG image. Official reference available <a href="https://www.w3.org/TR/SVG2/">here</a>. */
@@ -51,22 +48,12 @@ public final class Image implements Element {
         this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
     }
 
-    /**
-     * Renders this image on the screen by using the given ShapeRenderer.
-     *
-     * @param sr The ShapeRenderer to be used.
-     */
-    public void draw(final ShapeRenderer sr) {
-        sr.setAutoShapeType(true);
-        sr.begin();
-        for (final Element elem : elements) {
-            switch (elem) {
-                case Rectangle rect -> rect.draw(sr);
-                case Path path -> path.draw(sr);
-                default -> throw new Error(elem.toString());
-            }
-        }
-        sr.end();
+    public int getNumElements() {
+        return elements.size();
+    }
+
+    public Element getElement(final int idx) {
+        return elements.get(idx);
     }
 
     @Override

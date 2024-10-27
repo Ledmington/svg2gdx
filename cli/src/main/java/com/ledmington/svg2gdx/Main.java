@@ -138,7 +138,7 @@ public class Main {
                 public void accept(final ShapeRenderer sr) {
                     it++;
                     final long start = System.nanoTime();
-                    parsed.draw(sr);
+                    Drawer.draw(sr, parsed);
                     final long end = System.nanoTime();
                     totalTime += (end - start);
                     if (it >= MAX_ITERATIONS) {

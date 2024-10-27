@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
 import com.ledmington.svg.Color;
 import com.ledmington.svg.Element;
 import com.ledmington.util.HashUtils;
@@ -45,10 +43,12 @@ public final class Path implements Element {
         this.strokeWidth = strokeWidth;
     }
 
-    public void draw(final ShapeRenderer sr) {
-        for (final SubPath subpath : subpaths) {
-            subpath.draw(sr, ((MoveTo) subpath.getElement(0)).getPoint(0));
-        }
+    public int getNumSubpaths() {
+        return subpaths.size();
+    }
+
+    public SubPath getSubpath(final int idx) {
+        return subpaths.get(idx);
     }
 
     @Override
