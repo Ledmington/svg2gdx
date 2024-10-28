@@ -32,12 +32,10 @@ public final class Group implements Element {
         if (elements.isEmpty()) {
             throw new IllegalArgumentException("Useless group with no elements inside");
         }
+        for (final Element elem : elements) {
+            Objects.requireNonNull(elem);
+        }
         this.elements = Collections.unmodifiableList(elements);
-    }
-
-    @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
     }
 
     @Override

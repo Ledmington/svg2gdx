@@ -42,6 +42,14 @@ public final class Arc implements PathElement {
         return isRelative;
     }
 
+    public int getNumElements() {
+        return elements.size();
+    }
+
+    public ArcElement getElement(final int idx) {
+        return elements.get(idx);
+    }
+
     @Override
     public String toString() {
         return "Arc(isRelative=" + isRelative + ";elements=" + elements + ')';

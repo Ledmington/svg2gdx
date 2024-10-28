@@ -17,9 +17,4 @@
  */
 package com.ledmington.svg;
 
-public record Circle(double cx, double cy, double r) implements Element {
-    @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
-    }
-}
+public record Circle(double cx, double cy, double r) implements Element {}

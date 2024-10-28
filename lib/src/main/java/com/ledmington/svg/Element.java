@@ -18,12 +18,4 @@
 package com.ledmington.svg;
 
 /** An element of an SVG image. */
-public interface Element {
-
-    /**
-     * Serializes this SVGElement into libGDX ShapeRenderer code.
-     *
-     * @return A possibly multi-line String containing valid java libGDX ShapeRenderer code.
-     */
-    String toGDXShapeRenderer();
-}
+public interface Element {}

@@ -36,12 +36,18 @@ public final class Polyline implements Element {
         if (points.isEmpty()) {
             throw new IllegalArgumentException("Empty list of points");
         }
+        for (final Point p : points) {
+            Objects.requireNonNull(p);
+        }
         this.points = Collections.unmodifiableList(points);
     }
 
-    @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
+    public int getNumPoints() {
+        return points.size();
+    }
+
+    public Point getPoint(final int idx) {
+        return points.get(idx);
     }
 
     @Override

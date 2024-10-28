@@ -182,9 +182,9 @@ public final class Parser {
     }
 
     private static Group parseGroup(final Node node) {
-        Color fill = new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0);
-        Color stroke = new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0);
-        double strokeWidth = 0.0;
+        Color fill = new Color();
+        Color stroke = new Color();
+        double strokeWidth = 1.0;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
@@ -271,7 +271,7 @@ public final class Parser {
         double height = 0.0;
         Color fill = new Color();
         Color stroke = new Color();
-        double strokeWidth = 0.0;
+        double strokeWidth = 1.0;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);

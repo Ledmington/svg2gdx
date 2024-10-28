@@ -17,13 +17,19 @@
  */
 package com.ledmington.svg2gdx;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.ledmington.svg.Element;
 import com.ledmington.svg.Image;
+import com.ledmington.svg.Polyline;
 import com.ledmington.svg.Rectangle;
 import com.ledmington.svg.path.CubicBezier;
 import com.ledmington.svg.path.CubicBezierElement;
+import com.ledmington.svg.path.HorizontalLineTo;
 import com.ledmington.svg.path.LineTo;
 import com.ledmington.svg.path.MoveTo;
 import com.ledmington.svg.path.Path;
@@ -35,62 +41,192 @@ import com.ledmington.util.ParseUtils;
 public final class Drawer {
 
     // TODO: make modifiable by the user
+    // Used also for arcs
     private static final int DEFAULT_CURVE_SEGMENTS = 50;
 
     private Drawer() {}
 
-    /**
-     * Renders this image on the screen by using the given ShapeRenderer.
-     *
-     * @param sr The ShapeRenderer to be used.
-     */
-    public static void draw(final ShapeRenderer sr, final Image image) {
+    /** Renders this image on the screen by using the given ShapeRenderer. */
+    public static void draw(final ShapeRenderer sr, final Image image, final double viewportHeight) {
+        Objects.requireNonNull(sr);
+        Objects.requireNonNull(image);
+
         sr.setAutoShapeType(true);
         sr.begin();
         for (int i = 0; i < image.getNumElements(); i++) {
             final Element elem = image.getElement(i);
+            Objects.requireNonNull(elem);
             switch (elem) {
-                case Rectangle rect -> draw(sr, rect);
-                case Path path -> draw(sr, path);
+                case Rectangle rect -> draw(sr, rect, viewportHeight);
+                case Path path -> draw(sr, path, viewportHeight);
+                case Polyline poly -> draw(sr, poly, viewportHeight);
                 default -> throw new IllegalArgumentException(elem.toString());
             }
         }
         sr.end();
     }
 
-    public static void draw(final ShapeRenderer sr, final Rectangle rect) {
-        sr.set(ShapeRenderer.ShapeType.Filled);
-        sr.setColor(
-                ParseUtils.byteToFloat(rect.fill().r()),
-                ParseUtils.byteToFloat(rect.fill().g()),
-                ParseUtils.byteToFloat(rect.fill().b()),
-                ParseUtils.byteToFloat(rect.fill().a()));
-        sr.rect((float) rect.x(), (float) rect.y(), (float) rect.width(), (float) rect.height());
+    private static void draw(final ShapeRenderer sr, final Polyline poly, final double viewportHeight) {
+        Objects.requireNonNull(sr);
+        Objects.requireNonNull(poly);
 
-        sr.set(ShapeRenderer.ShapeType.Line);
-        sr.setColor(
-                ParseUtils.byteToFloat(rect.stroke().r()),
-                ParseUtils.byteToFloat(rect.stroke().g()),
-                ParseUtils.byteToFloat(rect.stroke().b()),
-                ParseUtils.byteToFloat(rect.stroke().a()));
-        sr.rect((float) rect.x(), (float) rect.y(), (float) rect.width(), (float) rect.height());
-    }
-
-    public static void draw(final ShapeRenderer sr, final Path path) {
-        for (int i = 0; i < path.getNumSubpaths(); i++) {
-            final SubPath subpath = path.getSubpath(i);
-            draw(sr, subpath, ((MoveTo) subpath.getElement(0)).getPoint(0));
+        Point current = new Point(0.0, 0.0);
+        for (int i = 0; i < poly.getNumPoints(); i++) {
+            final Point p = poly.getPoint(i);
+            sr.line((float) current.x(), (float) current.y(), (float) p.x(), (float) p.y());
+            current = p;
         }
     }
 
-    public static void draw(final ShapeRenderer sr, final SubPath subpath, final Point initial) {
-        Point current = null;
+    private static void draw(final ShapeRenderer sr, final Rectangle rect, final double viewportHeight) {
+        Objects.requireNonNull(sr);
+        Objects.requireNonNull(rect);
+
+        sr.set(ShapeRenderer.ShapeType.Filled);
+        sr.setColor(
+                ParseUtils.byteToFloat(rect.fill().red()),
+                ParseUtils.byteToFloat(rect.fill().green()),
+                ParseUtils.byteToFloat(rect.fill().blue()),
+                ParseUtils.byteToFloat(rect.fill().alpha()));
+        sr.rect((float) rect.x(), (float) (viewportHeight - rect.height() - rect.y()), (float) rect.width(), (float)
+                rect.height());
+
+        sr.set(ShapeRenderer.ShapeType.Line);
+        sr.setColor(
+                ParseUtils.byteToFloat(rect.stroke().red()),
+                ParseUtils.byteToFloat(rect.stroke().green()),
+                ParseUtils.byteToFloat(rect.stroke().blue()),
+                ParseUtils.byteToFloat(rect.stroke().alpha()));
+        sr.rect((float) rect.x(), (float) (viewportHeight - rect.height() - rect.y()), (float) rect.width(), (float)
+                rect.height());
+    }
+
+    private static void draw(final ShapeRenderer sr, final Path path, final double viewportHeight) {
+        Objects.requireNonNull(sr);
+        Objects.requireNonNull(path);
+
+        drawFilledPath(sr, path, viewportHeight);
+        drawOutlinePath(sr, path, viewportHeight);
+    }
+
+    private static void drawFilledPath(final ShapeRenderer sr, final Path path, final double viewportHeight) {
+        sr.set(ShapeRenderer.ShapeType.Filled);
+        sr.setColor(
+                ParseUtils.byteToFloat(path.getFill().red()),
+                ParseUtils.byteToFloat(path.getFill().green()),
+                ParseUtils.byteToFloat(path.getFill().blue()),
+                ParseUtils.byteToFloat(path.getFill().alpha()));
+
+        // Gather points for the filled polygon
+        for (int i = 0; i < path.getNumSubpaths(); i++) {
+            final SubPath subpath = path.getSubpath(i);
+            final List<Float> vertices = new ArrayList<>();
+
+            final Point initial = ((MoveTo) subpath.getElement(0)).getPoint(0);
+            Point current = new Point(0.0, 0.0);
+            for (int j = 0; j < subpath.getNumElements(); j++) {
+                final PathElement e = subpath.getElement(j);
+                switch (e) {
+                    case MoveTo m -> {
+                        if (m.isRelative()) {
+                            current = current.add(initial);
+                        } else {
+                            current = initial;
+                        }
+
+                        for (int k = 0; k < m.getNumPoints(); k++) {
+                            final Point next = m.getPoint(k);
+                            if (m.isRelative()) {
+                                current = current.add(next);
+                            } else {
+                                current = next;
+                            }
+                            vertices.add((float) current.x());
+                            vertices.add((float) (viewportHeight - current.y()));
+                        }
+                    }
+                    case LineTo l -> {
+                        for (int k = 0; k < l.getNumPoints(); k++) {
+                            final Point p = l.getPoint(k);
+                            if (l.isRelative()) {
+                                current = current.add(p);
+                            } else {
+                                current = p;
+                            }
+                            vertices.add((float) current.x());
+                            vertices.add((float) (viewportHeight - current.y()));
+                        }
+                    }
+                    case HorizontalLineTo h -> {
+                        for (int k = 0; k < h.getNumCoordinates(); k++) {
+                            final double px = h.getCoordinate(k);
+                            if (h.isRelative()) {
+                                current = current.add(new Point(px, 0.0));
+                            } else {
+                                current = new Point(px, 0.0);
+                            }
+                            vertices.add(0.0f);
+                            vertices.add((float) (viewportHeight - current.y()));
+                        }
+                    }
+                    default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", e));
+                }
+            }
+
+            if (vertices.size() < 6 || (vertices.size() - 2) % 4 != 0) {
+                throw new IllegalArgumentException(
+                        String.format("Wrong number of triangle vertices: %,d", vertices.size()));
+            }
+
+            final float[] polygonVertices = convertToNative(vertices);
+            // This mode of drawing is also called "triangle fan"
+            for (int j = 2; j + 3 < polygonVertices.length; j += 4) {
+                sr.triangle(
+                        polygonVertices[0],
+                        polygonVertices[1],
+                        polygonVertices[j],
+                        polygonVertices[j + 1],
+                        polygonVertices[j + 2],
+                        polygonVertices[j + 3]);
+            }
+        }
+    }
+
+    private static void drawOutlinePath(final ShapeRenderer sr, final Path path, final double viewportHeight) {
+        sr.set(ShapeRenderer.ShapeType.Line);
+        sr.setColor(
+                ParseUtils.byteToFloat(path.getStroke().red()),
+                ParseUtils.byteToFloat(path.getStroke().green()),
+                ParseUtils.byteToFloat(path.getStroke().blue()),
+                ParseUtils.byteToFloat(path.getStroke().alpha()));
+
+        for (int i = 0; i < path.getNumSubpaths(); i++) {
+            final SubPath subpath = path.getSubpath(i);
+            draw(sr, subpath, ((MoveTo) subpath.getElement(0)).getPoint(0), viewportHeight);
+        }
+    }
+
+    private static float[] convertToNative(final List<Float> v) {
+        final float[] w = new float[v.size()];
+        for (int i = 0; i < v.size(); i++) {
+            w[i] = v.get(i);
+        }
+        return w;
+    }
+
+    private static void draw(
+            final ShapeRenderer sr, final SubPath subpath, final Point initial, final double viewportHeight) {
+        Objects.requireNonNull(sr);
+        Objects.requireNonNull(subpath);
+        Objects.requireNonNull(initial);
+
+        Point current = new Point(0.0, 0.0);
         for (int i = 0; i < subpath.getNumElements(); i++) {
             final PathElement e = subpath.getElement(i);
             switch (e) {
                 case MoveTo m -> {
                     if (m.isRelative()) {
-                        current = (current == null) ? new Point(0.0, 0.0).add(initial) : current.add(initial);
+                        current = current.add(initial);
                     } else {
                         current = initial;
                     }
@@ -98,11 +234,18 @@ public final class Drawer {
                     for (int j = 0; j < m.getNumPoints(); j++) {
                         final Point next = m.getPoint(j);
                         if (m.isRelative()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + next.x()), (float)
-                                    (current.y() + next.y()));
+                            sr.line(
+                                    (float) current.x(),
+                                    (float) (viewportHeight - current.y()),
+                                    (float) (current.x() + next.x()),
+                                    (float) (viewportHeight - current.y() + next.y()));
                             current = current.add(next);
                         } else {
-                            sr.line((float) current.x(), (float) current.y(), (float) next.x(), (float) next.y());
+                            sr.line(
+                                    (float) current.x(),
+                                    (float) (viewportHeight - current.y()),
+                                    (float) next.x(),
+                                    (float) (viewportHeight - next.y()));
                             current = next;
                         }
                     }
@@ -111,29 +254,35 @@ public final class Drawer {
                     for (int j = 0; j < l.getNumPoints(); j++) {
                         final Point p = l.getPoint(j);
                         if (l.isRelative()) {
-                            sr.line((float) current.x(), (float) current.y(), (float) (current.x() + p.x()), (float)
-                                    (current.y() + p.y()));
+                            sr.line(
+                                    (float) current.x(),
+                                    (float) (viewportHeight - current.y()),
+                                    (float) (current.x() + p.x()),
+                                    (float) (viewportHeight - current.y() + p.y()));
                             current = current.add(p);
                         } else {
-                            sr.line((float) current.x(), (float) current.y(), (float) p.x(), (float) p.y());
+                            sr.line((float) current.x(), (float) (viewportHeight - current.y()), (float) p.x(), (float)
+                                    (viewportHeight - p.y()));
                             current = p;
                         }
                     }
                 }
-                case CubicBezier b -> {
-                    for (int j = 0; j < b.getNumElements(); j++) {
-                        final CubicBezierElement be = b.getElement(j);
-                        if (b.isRelative()) {
+                case CubicBezier cb -> {
+                    for (int j = 0; j < cb.getNumElements(); j++) {
+                        final CubicBezierElement be = cb.getElement(j);
+                        if (cb.isRelative()) {
                             sr.curve(
                                     (float) current.x(),
-                                    (float) current.y(),
+                                    (float) (viewportHeight - current.y()),
                                     (float) (current.x()
                                             + be.firstControlPoint().x()),
-                                    (float) (current.y()
+                                    (float) (viewportHeight
+                                            - current.y()
                                             + be.firstControlPoint().y()),
                                     (float) (current.x()
                                             + be.secondControlPoint().x()),
-                                    (float) (current.y()
+                                    (float) (viewportHeight
+                                            - current.y()
                                             + be.secondControlPoint().y()),
                                     (float) (current.x() + be.endPoint().x()),
                                     (float) (current.y() + be.endPoint().y()),
@@ -142,13 +291,15 @@ public final class Drawer {
                         } else {
                             sr.curve(
                                     (float) current.x(),
-                                    (float) current.y(),
+                                    (float) (viewportHeight - current.y()),
                                     (float) be.firstControlPoint().x(),
-                                    (float) be.firstControlPoint().y(),
+                                    (float) (viewportHeight
+                                            - be.firstControlPoint().y()),
                                     (float) be.secondControlPoint().x(),
-                                    (float) be.secondControlPoint().y(),
+                                    (float) (viewportHeight
+                                            - be.secondControlPoint().y()),
                                     (float) be.endPoint().x(),
-                                    (float) be.endPoint().y(),
+                                    (float) (viewportHeight - be.endPoint().y()),
                                     DEFAULT_CURVE_SEGMENTS);
                             current = be.endPoint();
                         }
@@ -159,6 +310,7 @@ public final class Drawer {
         }
 
         // close the path
-        sr.line((float) current.x(), (float) current.y(), (float) initial.x(), (float) initial.y());
+        sr.line((float) current.x(), (float) (viewportHeight - current.y()), (float) initial.x(), (float)
+                (viewportHeight - initial.y()));
     }
 }

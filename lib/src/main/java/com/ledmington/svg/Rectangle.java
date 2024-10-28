@@ -17,6 +17,8 @@
  */
 package com.ledmington.svg;
 
+import java.util.Objects;
+
 /**
  * A rectangle aligned with the axis. Official documentation available <a
  * href="https://www.w3.org/TR/SVG2/shapes.html#RectElement">here</a>.
@@ -28,11 +30,29 @@ package com.ledmington.svg;
  */
 public record Rectangle(double x, double y, double width, double height, Color fill, Color stroke, double strokeWidth)
         implements Element {
-    @Override
-    public String toGDXShapeRenderer() {
-        // return "sr.set(" + (filled ? "ShapeType.Filled" : "ShapeType.Line") + ");\n"
-        // + String.format("sr.setColor(%s);", colorName) + '\n'
-        // + String.format("sr.rect(%sf, %sf, %sf, %sf);", x, y, width, height) + '\n';
-        throw new Error("Not implemented");
+    public Rectangle(
+            final double x,
+            final double y,
+            final double width,
+            final double height,
+            final Color fill,
+            final Color stroke,
+            final double strokeWidth) {
+        this.x = x;
+        this.y = y;
+
+        if (width <= 0.0 || height <= 0.0) {
+            throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
+        }
+        this.width = width;
+        this.height = height;
+
+        this.fill = Objects.requireNonNull(fill);
+        this.stroke = Objects.requireNonNull(stroke);
+
+        if (strokeWidth <= 0.0) {
+            throw new IllegalArgumentException(String.format("Invalid stroke-width: %f", strokeWidth));
+        }
+        this.strokeWidth = strokeWidth;
     }
 }

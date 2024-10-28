@@ -17,17 +17,15 @@
  */
 package com.ledmington.svg;
 
-import com.ledmington.util.ParseUtils;
-
 /**
  * An RGBA color.
  *
- * @param r The red component.
- * @param g The green component.
- * @param b The blue component.
- * @param a The alpha component.
+ * @param red The red component.
+ * @param green The green component.
+ * @param blue The blue component.
+ * @param alpha The alpha component.
  */
-public record Color(byte r, byte g, byte b, byte a) implements Element {
+public record Color(byte red, byte green, byte blue, byte alpha) implements Element {
 
     /** Creates a default RGBA color with all components set to 0 (transparent black). */
     public Color() {
@@ -35,21 +33,7 @@ public record Color(byte r, byte g, byte b, byte a) implements Element {
     }
 
     @Override
-    public String toGDXShapeRenderer() {
-        return String.format(
-                "new Color(%sf, %sf, %sf, %sf); // #%02X%02X%02X%02X",
-                ParseUtils.byteToFloat(r),
-                ParseUtils.byteToFloat(g),
-                ParseUtils.byteToFloat(b),
-                ParseUtils.byteToFloat(a),
-                r,
-                g,
-                b,
-                a);
-    }
-
-    @Override
     public String toString() {
-        return String.format("SVGColor[r=0x%02x, g=0x%02x, b=0x%02x, a=0x%02x]", r, g, b, a);
+        return String.format("SVGColor[red=0x%02x, green=0x%02x, blue=0x%02x, aalpha=0x%02x]", red, green, blue, alpha);
     }
 }

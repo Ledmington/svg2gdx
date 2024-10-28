@@ -40,12 +40,23 @@ public final class Image implements Element {
      */
     public Image(final ViewBox viewBox, final double width, final double height, final List<Element> elements) {
         this.viewBox = Objects.requireNonNull(viewBox);
-        if (width < 0.0 || height < 0.0) {
+        if (width <= 0.0 || height <= 0.0) {
             throw new IllegalArgumentException(String.format("Invalid width and height: %f x %f", width, height));
         }
         this.width = width;
         this.height = height;
-        this.elements = Collections.unmodifiableList(Objects.requireNonNull(elements));
+        Objects.requireNonNull(elements);
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Useless image with no elements inside");
+        }
+        for (final Element elem : elements) {
+            Objects.requireNonNull(elem);
+        }
+        this.elements = Collections.unmodifiableList(elements);
+    }
+
+    public ViewBox getViewBox() {
+        return viewBox;
     }
 
     public int getNumElements() {
@@ -54,28 +65,6 @@ public final class Image implements Element {
 
     public Element getElement(final int idx) {
         return elements.get(idx);
-    }
-
-    @Override
-    public String toGDXShapeRenderer() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("private void draw(final float x, final float y) {\n")
-                .append(String.format("final double width = %s;", width))
-                .append('\n')
-                .append(String.format("final double height = %s;", height))
-                .append('\n')
-                .append("final ShapeRenderer sr = @Place here your ShapeRenderer@;\n")
-                .append("float currentX = 0.0f;\n")
-                .append("float currentY = 0.0f;\n")
-                .append("float initialX = 0.0f;\n")
-                .append("float initialY = 0.0f;\n")
-                .append("sr.setAutoShapeType(true);\n")
-                .append("sr.begin();\n");
-        for (final Element elem : elements) {
-            sb.append(elem.toGDXShapeRenderer());
-        }
-        sb.append("sr.end();\n}\n");
-        return sb.toString();
     }
 
     @Override

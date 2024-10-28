@@ -69,11 +69,6 @@ public final class SubPath implements Element {
     }
 
     @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
-    }
-
-    @Override
     public String toString() {
         return "SubPath(elements=" + elements + ')';
     }

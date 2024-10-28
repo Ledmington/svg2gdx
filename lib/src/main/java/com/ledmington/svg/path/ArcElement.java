@@ -17,5 +17,8 @@
  */
 package com.ledmington.svg.path;
 
+/*
+ * An elliptical arc curve command. Official documentation available <a href="https://www.w3.org/TR/SVG2/paths.html#PathDataEllipticalArcCommands">here</a>.
+ */
 public record ArcElement(
         double rx, double ry, double xAxisRotation, double largeArcFlag, double sweepFlag, double x, double y) {}

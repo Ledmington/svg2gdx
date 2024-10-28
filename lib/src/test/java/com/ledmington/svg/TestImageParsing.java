@@ -74,7 +74,7 @@ public final class TestImageParsing {
                                                 398.0,
                                                 new Color(),
                                                 new Color((byte) 0, (byte) 0, (byte) 0xff, (byte) 0xff),
-                                                0.0),
+                                                1.0),
                                         new Path(
                                                 List.of(new SubPath(
                                                         List.of(
@@ -91,7 +91,7 @@ public final class TestImageParsing {
                                 188.97500000000002,
                                 151.18,
                                 List.of(
-                                        new Rectangle(1.0, 1.0, 498.0, 398.0, new Color(), new Color(), 0.0),
+                                        new Rectangle(1.0, 1.0, 498.0, 398.0, new Color(), new Color(), 1.0),
                                         new Polyline(List.of(new Point(100.0, 200.0), new Point(100.0, 100.0))),
                                         new Polyline(List.of(new Point(250.0, 100.0), new Point(250.0, 200.0))),
                                         new Polyline(List.of(new Point(250.0, 200.0), new Point(250.0, 300.0))),
@@ -115,7 +115,7 @@ public final class TestImageParsing {
                                                                                         new Point(400.0, 200.0))))))),
                                                 new Color(),
                                                 new Color(),
-                                                0.0),
+                                                1.0),
                                         new Circle(100.0, 200.0, 10.0),
                                         new Circle(250.0, 200.0, 10.0),
                                         new Circle(400.0, 200.0, 10.0),
@@ -160,7 +160,7 @@ public final class TestImageParsing {
                                                 new Style(
                                                         new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0xff),
                                                         new Color(),
-                                                        0.0),
+                                                        1.0),
                                                 List.of(
                                                         new Circle(200.0, 300.0, 10.0),
                                                         new Circle(600.0, 300.0, 10.0),
@@ -169,7 +169,7 @@ public final class TestImageParsing {
                                                 new Style(
                                                         new Color((byte) 0x88, (byte) 0x88, (byte) 0x88, (byte) 0xff),
                                                         new Color(),
-                                                        0.0),
+                                                        1.0),
                                                 List.of(new Circle(400.0, 50.0, 10.0), new Circle(800.0, 550.0, 10.0))),
                                         new Path(
                                                 List.of(new SubPath(

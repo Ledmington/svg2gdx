@@ -122,12 +122,17 @@ public class Main {
         // Needed to make jol's GraphLayout work
         System.setProperty("jol.magicFieldOffset", "true");
 
+        final long start = System.nanoTime();
         final Image parsed = Parser.parseImage(new File(filename));
+        final long end = System.nanoTime();
+        System.out.printf(
+                "Parsed '%s' in %,d ns (%.3f ms)%n", filename, end - start, (double) (end - start) / 1_000_000.0);
         System.out.printf(
                 "One runtime instance of this image occupies %,d bytes.%n",
                 GraphLayout.parseInstance(parsed).totalSize());
 
         if (showcase) {
+            final double viewportHeight = height;
             Showcase.run(width, height, background, new Consumer<>() {
 
                 private static final int MAX_ITERATIONS = 100;
@@ -138,7 +143,7 @@ public class Main {
                 public void accept(final ShapeRenderer sr) {
                     it++;
                     final long start = System.nanoTime();
-                    Drawer.draw(sr, parsed);
+                    Drawer.draw(sr, parsed, viewportHeight);
                     final long end = System.nanoTime();
                     totalTime += (end - start);
                     if (it >= MAX_ITERATIONS) {
@@ -153,7 +158,7 @@ public class Main {
                 }
             });
         } else {
-            System.out.println(parsed.toGDXShapeRenderer());
+            System.out.println(Serializer.serialize(parsed));
         }
     }
 }

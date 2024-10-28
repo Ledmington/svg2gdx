@@ -17,9 +17,21 @@
  */
 package com.ledmington.svg;
 
+import java.util.Objects;
+
 public record Style(Color fill, Color stroke, double strokeWidth) {
-    /** Default values. */
+
+    public Style(final Color fill, final Color stroke, final double strokeWidth) {
+        this.fill = Objects.requireNonNull(fill);
+        this.stroke = Objects.requireNonNull(stroke);
+
+        if (strokeWidth <= 0.0) {
+            throw new IllegalArgumentException(String.format("Invalid stroke-width: %f", strokeWidth));
+        }
+        this.strokeWidth = strokeWidth;
+    }
+
     public Style() {
-        this(new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0), new Color((byte) 0, (byte) 0, (byte) 0, (byte) 0), 0.0);
+        this(new Color(), new Color(), 1.0);
     }
 }

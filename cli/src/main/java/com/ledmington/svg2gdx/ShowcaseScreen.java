@@ -80,6 +80,6 @@ public final class ShowcaseScreen implements Screen {
 
     @Override
     public void dispose() {
-        // intentionally empty
+        sr.dispose();
     }
 }

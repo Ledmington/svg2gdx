@@ -51,7 +51,8 @@ public final class Showcase extends Game {
         config.setResizable(true);
         config.setTitle("svg2gdx - Showcase");
         config.useVsync(true);
-        config.setDecorated(false);
+        config.setDecorated(true);
+        config.disableAudio(true);
         config.setWindowedMode(width, height);
 
         new Lwjgl3Application(new Showcase(width, height, background, drawImage), config);

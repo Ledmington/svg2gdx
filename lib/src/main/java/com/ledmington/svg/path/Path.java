@@ -51,9 +51,12 @@ public final class Path implements Element {
         return subpaths.get(idx);
     }
 
-    @Override
-    public String toGDXShapeRenderer() {
-        throw new Error("Not implemented");
+    public Color getFill() {
+        return fill;
+    }
+
+    public Color getStroke() {
+        return stroke;
     }
 
     @Override
