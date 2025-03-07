@@ -61,7 +61,7 @@ public final class Path implements Element {
 
     @Override
     public String toString() {
-        return "Path(subpaths=" + subpaths + ";fill=" + fill + ";stroke=" + stroke + ";stokeWidth=" + strokeWidth + ")";
+        return "Path(subpaths=" + subpaths + ";fill=" + fill + ";stroke=" + stroke + ";strokeWidth=" + strokeWidth + ")";
     }
 
     @Override
@@ -82,10 +82,9 @@ public final class Path implements Element {
         if (this == other) {
             return true;
         }
-        if (!this.getClass().equals(other.getClass())) {
+        if (!(other instanceof  Path p)) {
             return false;
         }
-        final Path p = (Path) other;
         return this.subpaths.equals(p.subpaths)
                 && this.fill.equals(p.fill)
                 && this.stroke.equals(p.stroke)
