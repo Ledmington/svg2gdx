@@ -61,7 +61,7 @@ allprojects {
 
     javadoc {
         failOnError = true
-        title "svg2gdx-v${version}-doc"
+        title = "svg2gdx-v${version}-doc"
         options.encoding = 'UTF-8'
         options.addBooleanOption('Werror', true)
     }
@@ -85,28 +85,28 @@ allprojects {
     }
 
     testlogger {
-        theme 'standard'
+        theme = 'standard'
 
-        showExceptions true
-        showStackTraces true
-        showFullStackTraces true
-        showCauses true
+        showExceptions = true
+        showStackTraces = true
+        showFullStackTraces = true
+        showCauses = true
 
-        slowThreshold 2000
+        slowThreshold = 2000
 
-        showSummary true
-        showSimpleNames false
-        showPassed false // enable for verbose tests
-        showSkipped true
-        showFailed true
-        showOnlySlow false
+        showSummary = true
+        showSimpleNames = false
+        showPassed = false // enable for verbose tests
+        showSkipped = true
+        showFailed = true
+        showOnlySlow = false
 
-        showStandardStreams true
-        showPassedStandardStreams false
-        showSkippedStandardStreams true
-        showFailedStandardStreams true
+        showStandardStreams = true
+        showPassedStandardStreams = false
+        showSkippedStandardStreams = true
+        showFailedStandardStreams = true
 
-        logLevel 'lifecycle'
+        logLevel = 'lifecycle'
     }
 
     pmd {
