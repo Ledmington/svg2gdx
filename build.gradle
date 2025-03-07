@@ -2,10 +2,10 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'pmd'
-    id 'com.github.spotbugs' version '6.0.25'
+    id 'com.github.spotbugs' version '6.1.7'
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'com.diffplug.spotless' version '6.25.0'
-    id 'com.github.ben-manes.versions' version '0.51.0'
+    id 'com.diffplug.spotless' version '7.0.2'
+    id 'com.github.ben-manes.versions' version '0.52.0'
     id 'de.undercouch.download' version '5.6.0'
 }
 
@@ -22,7 +22,7 @@ ext.appNameLowerCase = appName.toLowerCase(Locale.US)
 String author = 'Filippo Barbari'
 String authorMail = 'filippo.barbari@gmail.com'
 
-ext.junitVersion = '5.11.3'
+ext.junitVersion = '5.12.0'
 // End tunables
 
 allprojects {
@@ -119,7 +119,7 @@ allprojects {
     }
 
     spotbugs {
-        toolVersion = '4.8.6'
+        toolVersion = '4.9.2'
 
         ignoreFailures = false
         showStackTraces = true
