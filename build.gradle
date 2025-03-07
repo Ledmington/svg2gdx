@@ -139,7 +139,7 @@ spotless {
     format 'misc', {
         target '*.md', '.gitignore', '.gitattributes'
         trimTrailingWhitespace()
-        indentWithTabs()
+        leadingSpacesToTabs()
         endWithNewline()
         setEncoding('utf-8')
     }
@@ -152,10 +152,10 @@ spotless {
         removeUnusedImports()
         formatAnnotations()
         trimTrailingWhitespace()
-        indentWithTabs()
+        leadingSpacesToTabs()
         endWithNewline()
         setEncoding('utf-8')
-        palantirJavaFormat('2.50.0').formatJavadoc(true)
+        palantirJavaFormat('2.55.0').formatJavadoc(true)
 
         // check https://javadoc.io/doc/com.diffplug.spotless/spotless-plugin-gradle/latest/com/diffplug/gradle/spotless/JavaExtension.html
         importOrder('java', 'javax', 'javafx', 'org.junit', 'com', 'com.ledmington', 'org', group as String)
