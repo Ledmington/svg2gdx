@@ -1,6 +1,6 @@
 /*
  * svg2gdx - A converter from SVG to libGDX ShapeRenderer code.
- * Copyright (C) 2023-2024 Filippo Barbari <filippo.barbari@gmail.com>
+ * Copyright (C) 2023-2025 Filippo Barbari <filippo.barbari@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
