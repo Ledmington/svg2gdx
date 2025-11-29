@@ -53,6 +53,10 @@ import org.xml.sax.SAXException;
 /** Parser of SVG images. */
 public final class Parser {
 
+    private static final Color DEFAULT_FILL_COLOR = new Color();
+    private static final Color DEFAULT_STROKE_COLOR = new Color();
+    private static final double DEFAULT_STROKE_WIDTH = 1.0;
+
     private Parser() {}
 
     /**
@@ -182,9 +186,9 @@ public final class Parser {
     }
 
     private static Group parseGroup(final Node node) {
-        Color fill = new Color();
-        Color stroke = new Color();
-        double strokeWidth = 1.0;
+        Color fill = DEFAULT_FILL_COLOR;
+        Color stroke = DEFAULT_STROKE_COLOR;
+        double strokeWidth = DEFAULT_STROKE_WIDTH;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
@@ -269,9 +273,9 @@ public final class Parser {
         double y = 0.0;
         double width = 0.0;
         double height = 0.0;
-        Color fill = new Color();
-        Color stroke = new Color();
-        double strokeWidth = 1.0;
+        Color fill = DEFAULT_FILL_COLOR;
+        Color stroke = DEFAULT_STROKE_COLOR;
+        double strokeWidth = DEFAULT_STROKE_WIDTH;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
@@ -285,7 +289,7 @@ public final class Parser {
                 case "fill" -> fill = parseColor(v);
                 case "stroke" -> stroke = parseColor(v);
                 case "stroke-width" -> strokeWidth = parseSize(v);
-                case "class" -> {
+                case "class", "style" -> {
                     // ignored for now
                 }
                 case "id" -> {
@@ -345,9 +349,9 @@ public final class Parser {
         }
 
         List<SubPath> subpaths = null;
-        Color fill = new Color();
-        Color stroke = new Color();
-        double strokeWidth = 0.0;
+        Color fill = DEFAULT_FILL_COLOR;
+        Color stroke = DEFAULT_STROKE_COLOR;
+        double strokeWidth = DEFAULT_STROKE_WIDTH;
 
         for (int i = 0; i < node.getAttributes().getLength(); i++) {
             final Node n = node.getAttributes().item(i);
@@ -358,8 +362,11 @@ public final class Parser {
                 case "fill" -> fill = parseColor(v);
                 case "stroke" -> stroke = parseColor(v);
                 case "stroke-width" -> strokeWidth = parseSize(v);
-                case "class" -> {
+                case "class", "style" -> {
                     // ignored for now
+                }
+                case "id" -> {
+                    // intentionally ignored
                 }
                 default -> throw new IllegalArgumentException(String.format("Unknown attribute '%s'", n.getNodeName()));
             }

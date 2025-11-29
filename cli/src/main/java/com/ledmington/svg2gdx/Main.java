@@ -136,6 +136,7 @@ public class Main {
             Showcase.run(width, height, background, new Consumer<>() {
 
                 private static final int MAX_ITERATIONS = 100;
+                private static final int TARGET_FPS = 60;
                 private int it = 0;
                 private long totalTime = 0L;
 
@@ -146,12 +147,15 @@ public class Main {
                     Drawer.draw(sr, parsed, viewportHeight);
                     final long end = System.nanoTime();
                     totalTime += (end - start);
+
                     if (it >= MAX_ITERATIONS) {
                         final double averageNanos = (double) totalTime / (double) MAX_ITERATIONS;
+                        final double averageMillis = averageNanos / 1_000_000.0;
+                        final double averageSeconds = averageNanos / 1_000_000_000.0;
                         System.out.printf(
-                                "Drawing the image %,d times took %,d ns (%.3f ms) on average. At 60 FPS you could draw this image %,d times per frame.%n",
-                                MAX_ITERATIONS, (long) averageNanos, averageNanos / 1_000_000.0, (long)
-                                        ((1.0 / 60.0) / (averageNanos / 1_000_000_000.0)));
+                                "Drawing the image %,d times took %,d ns (%.3f ms) on average. At %d FPS you could draw this image %,d times per frame.%n",
+                                MAX_ITERATIONS, (long) averageNanos, averageMillis, TARGET_FPS, (long)
+                                        ((1.0 / averageSeconds) / (double) TARGET_FPS));
                         it = 0;
                         totalTime = 0L;
                     }

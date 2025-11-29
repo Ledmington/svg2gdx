@@ -40,7 +40,7 @@ import com.ledmington.util.ParseUtils;
 
 public final class Drawer {
 
-    // TODO: make modifiable by the user
+    // TODO: make this modifiable by the user
     // Used also for arcs
     private static final int DEFAULT_CURVE_SEGMENTS = 50;
 
@@ -73,7 +73,7 @@ public final class Drawer {
         Point current = new Point(0.0, 0.0);
         for (int i = 0; i < poly.getNumPoints(); i++) {
             final Point p = poly.getPoint(i);
-            sr.line((float) current.x(), (float) current.y(), (float) p.x(), (float) p.y());
+            sr.line((float) current.x(), (float) (viewportHeight - current.y()), (float) p.x(), (float) p.y());
             current = p;
         }
     }
@@ -165,15 +165,49 @@ public final class Drawer {
                             } else {
                                 current = new Point(px, 0.0);
                             }
-                            vertices.add(0.0f);
+                            vertices.add((float) current.x());
                             vertices.add((float) (viewportHeight - current.y()));
                         }
                     }
+                    case CubicBezier cb -> {
+                        for (int k = 0; k < cb.getNumElements(); k++) {
+                            final CubicBezierElement be = cb.getElement(k);
+
+                            // Resolve control points & end point depending on relativeness
+                            final Point p0 = current;
+                            final Point p1 =
+                                    cb.isRelative() ? current.add(be.firstControlPoint()) : be.firstControlPoint();
+                            final Point p2 =
+                                    cb.isRelative() ? current.add(be.secondControlPoint()) : be.secondControlPoint();
+                            final Point p3 = cb.isRelative() ? current.add(be.endPoint()) : be.endPoint();
+
+                            // Sample the cubic curve
+                            for (int s = 1; s <= DEFAULT_CURVE_SEGMENTS; s++) {
+                                final double t = (double) s / DEFAULT_CURVE_SEGMENTS;
+
+                                final double mt = 1.0 - t;
+                                final double x = mt * mt * mt * p0.x()
+                                        + 3 * mt * mt * t * p1.x()
+                                        + 3 * mt * t * t * p2.x()
+                                        + t * t * t * p3.x();
+                                final double y = mt * mt * mt * p0.y()
+                                        + 3 * mt * mt * t * p1.y()
+                                        + 3 * mt * t * t * p2.y()
+                                        + t * t * t * p3.y();
+
+                                vertices.add((float) x);
+                                vertices.add((float) (viewportHeight - y));
+                            }
+
+                            current = p3; // Move current point to end of the curve
+                        }
+                    }
+
                     default -> throw new IllegalArgumentException(String.format("Unknown path element '%s'", e));
                 }
             }
 
-            if (vertices.size() < 6 || (vertices.size() - 2) % 4 != 0) {
+            if (vertices.size() < 6 /*|| (vertices.size() - 2) % 4 != 0*/) {
                 throw new IllegalArgumentException(
                         String.format("Wrong number of triangle vertices: %,d", vertices.size()));
             }

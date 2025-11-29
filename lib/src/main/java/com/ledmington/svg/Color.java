@@ -34,6 +34,6 @@ public record Color(byte red, byte green, byte blue, byte alpha) implements Elem
 
     @Override
     public String toString() {
-        return String.format("SVGColor[red=0x%02x, green=0x%02x, blue=0x%02x, aalpha=0x%02x]", red, green, blue, alpha);
+        return String.format("SVGColor[red=0x%02x, green=0x%02x, blue=0x%02x, alpha=0x%02x]", red, green, blue, alpha);
     }
 }
