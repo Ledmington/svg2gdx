@@ -438,8 +438,9 @@ public final class Parser {
                     it.move();
                     return new SubPath(subPathElements);
                 }
-                default -> throw new IllegalArgumentException(
-                        String.format("Unexpected character in path '%c' (U+%04x)", curr, (int) curr));
+                default ->
+                    throw new IllegalArgumentException(
+                            String.format("Unexpected character in path '%c' (U+%04x)", curr, (int) curr));
             }
         }
 

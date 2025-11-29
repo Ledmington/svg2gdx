@@ -4,8 +4,8 @@ plugins {
     id 'pmd'
     id 'com.github.spotbugs' version '6.1.7'
     id 'com.adarshr.test-logger' version '4.0.0'
-    id 'com.diffplug.spotless' version '7.0.2'
-    id 'com.github.ben-manes.versions' version '0.52.0'
+    id 'com.diffplug.spotless' version '8.1.0'
+    id 'com.github.ben-manes.versions' version '0.53.0'
     id 'de.undercouch.download' version '5.6.0'
 }
 
@@ -22,7 +22,7 @@ ext.appNameLowerCase = appName.toLowerCase(Locale.US)
 String author = 'Filippo Barbari'
 String authorMail = 'filippo.barbari@gmail.com'
 
-ext.junitVersion = '5.12.0'
+ext.junitVersion = '6.0.0'
 // End tunables
 
 allprojects {
@@ -111,7 +111,7 @@ allprojects {
 
     pmd {
         consoleOutput = true
-        toolVersion = "7.2.0"
+        toolVersion = "7.18.0"
         rulesMinimumPriority = 5
         threads = 1
         incrementalAnalysis = true
@@ -155,7 +155,7 @@ spotless {
         leadingSpacesToTabs()
         endWithNewline()
         setEncoding('utf-8')
-        palantirJavaFormat('2.55.0').formatJavadoc(true)
+        palantirJavaFormat('2.83.0').formatJavadoc(true)
 
         // check https://javadoc.io/doc/com.diffplug.spotless/spotless-plugin-gradle/latest/com/diffplug/gradle/spotless/JavaExtension.html
         importOrder('java', 'javax', 'javafx', 'org.junit', 'com', 'com.ledmington', 'org', group as String)
